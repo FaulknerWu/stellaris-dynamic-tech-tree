@@ -1,0 +1,67 @@
+{
+  "outputLanguages": {
+    "title": "输出语言",
+    "description": "这是写入 MOD 的本地化语言，与应用界面语言无关。",
+    "hint": "请至少勾选一种输出语言",
+    "selectedCount": "已选 {{count}} 种语言",
+    "items": {
+      "english": "English",
+      "simp_chinese": "简体中文",
+      "french": "Français",
+      "german": "Deutsch",
+      "spanish": "Español",
+      "russian": "Русский",
+      "korean": "한국어",
+      "japanese": "日本語",
+      "polish": "Polski",
+      "braz_por": "Português do Brasil"
+    }
+  },
+  "advanced": {
+    "unknownStrategy": {
+      "title": "未知条件处理",
+      "description": "决定科技前提触发器无法判定时的策略",
+      "includeFlagged": {
+        "label": "纳入并标记（推荐）"
+      },
+      "excludeStrict": {
+        "label": "严格排除"
+      },
+      "error": {
+        "label": "视为错误"
+      }
+    },
+    "swapUnknownStrategy": {
+      "title": "变体不确定时的处理",
+      "description": "开局身份无法确定变体时，保留基础显示或停止生成",
+      "keepBase": {
+        "label": "保留基础科技"
+      },
+      "error": {
+        "label": "视为错误"
+      }
+    }
+  },
+  "running": {
+    "title": "正在生成科技树",
+    "longWaitHint": "正在读取科技定义与本地化，MOD 较多时这一步需要较长时间…",
+    "cancelling": "正在取消生成任务…"
+  },
+  "stages": {
+    "SAVE_PARSE": "解析存档",
+    "LOAD_ORDER": "解析加载顺序",
+    "INGEST_TECH": "摄取科技定义",
+    "RELATIONS": "构建依赖关系",
+    "INGEST_L10N": "摄取本地化",
+    "RENDER": "预计算渲染",
+    "CYCLES": "检测依赖环",
+    "WRITE_OUTPUT": "写入输出文件",
+    "DONE": "完成"
+  },
+  "barriers": {
+    "needSave": "请选择一个存档",
+    "invalidSave": "该存档无法解析，请选择非铁人存档",
+    "needEmpire": "请选择要生成的帝国",
+    "needLanguage": "请至少选择一种输出语言"
+  }
+}

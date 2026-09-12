@@ -1,0 +1,67 @@
+{
+  "outputLanguages": {
+    "title": "Output Languages",
+    "description": "These are the localization languages written into the mod, unrelated to the app's interface language.",
+    "hint": "Please select at least one output language",
+    "selectedCount": "{{count}} languages selected",
+    "items": {
+      "english": "English",
+      "simp_chinese": "Simplified Chinese",
+      "french": "French",
+      "german": "German",
+      "spanish": "Spanish",
+      "russian": "Russian",
+      "korean": "Korean",
+      "japanese": "Japanese",
+      "polish": "Polish",
+      "braz_por": "Brazilian Portuguese"
+    }
+  },
+  "advanced": {
+    "unknownStrategy": {
+      "title": "Unknown Condition Handling",
+      "description": "Determines how technologies with unresolvable trigger conditions are handled",
+      "includeFlagged": {
+        "label": "Include and Flag (Recommended)"
+      },
+      "excludeStrict": {
+        "label": "Strict Exclusion"
+      },
+      "error": {
+        "label": "Treat as Error"
+      }
+    },
+    "swapUnknownStrategy": {
+      "title": "Uncertain Variant Handling",
+      "description": "Keep the base display or stop when the initial identity cannot determine a variant",
+      "keepBase": {
+        "label": "Keep base technology"
+      },
+      "error": {
+        "label": "Treat as Error"
+      }
+    }
+  },
+  "running": {
+    "title": "Generating Technology Tree",
+    "longWaitHint": "Reading tech definitions and localizations. This step may take longer if you have many active mods...",
+    "cancelling": "Cancelling generation task..."
+  },
+  "stages": {
+    "SAVE_PARSE": "Parse Save Game",
+    "LOAD_ORDER": "Resolve Load Order",
+    "INGEST_TECH": "Ingest Tech Definitions",
+    "RELATIONS": "Build Dependencies",
+    "INGEST_L10N": "Ingest Localisations",
+    "RENDER": "Precompute Render",
+    "CYCLES": "Detect Cycles",
+    "WRITE_OUTPUT": "Write Output Files",
+    "DONE": "Done"
+  },
+  "barriers": {
+    "needSave": "Please select a save game",
+    "invalidSave": "This save cannot be parsed. Please select a non-ironman save.",
+    "needEmpire": "Please select an empire",
+    "needLanguage": "Please select at least one output language"
+  }
+}

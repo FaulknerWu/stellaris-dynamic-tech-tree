@@ -1,0 +1,16 @@
+[package]
+name = "dtt-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Pure domain model and algorithms for Dynamic Technology Tree"
+
+[lib]
+name = "dtt_core"
+path = "src/lib.rs"
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true

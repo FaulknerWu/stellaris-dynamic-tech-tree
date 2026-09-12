@@ -1,0 +1,73 @@
+{
+  "title": "生成结果",
+  "banner": {
+    "success": {
+      "title": "生成完成",
+      "description": "成功导出 {{writtenCount}} 个本地化文件与依赖树产物。"
+    },
+    "incomplete": {
+      "title": "部分完成",
+      "description": "{{failedCount}} 个文件写入失败，其余 {{writtenCount}} 个文件已正常生成。"
+    }
+  },
+  "stats": {
+    "sources": "数据来源",
+    "sourcesDesc": "本体与 MOD 共 {{count}} 个来源",
+    "totalTech": "科技总数",
+    "totalTechDesc": "合并后的科技定义数量",
+    "eligibleTech": "适用科技",
+    "eligibleTechDesc": "按生成时帝国身份保留的未来科技路线",
+    "swaps": "变体替换",
+    "swapsDesc": "命中 {{matched}} 项，未匹配 {{noMatch}} 项，不确定 {{uncertain}} 项"
+  },
+  "files": {
+    "title": "产出文件清单",
+    "written": "已写入文件",
+    "removed": "已移除遗留文件",
+    "failed": "写入失败文件",
+    "report": "诊断报告文件"
+  },
+  "diagnostics": {
+    "title": "诊断信息",
+    "truncated": "另有 {{count}} 条诊断信息未在此处全部展示，详情请查看诊断报告文件。",
+    "categories": {
+      "unknownConditions": {
+        "title": "未知条件",
+        "description": "无法判定的触发器及受影响的科技"
+      },
+      "deferredConditions": {
+        "title": "过程性条件",
+        "description": "保留未来解锁可能性的事件、进度和对象条件"
+      },
+      "gameData": {
+        "title": "游戏数据解析",
+        "description": "解析游戏与 MOD 文件时遇到的问题"
+      },
+      "unhandledDefinitions": {
+        "title": "未处理字段",
+        "description": "科技定义中未被识别的字段"
+      },
+      "localisation": {
+        "title": "本地化",
+        "description": "本地化文件解析与行格式问题"
+      },
+      "cycles": {
+        "title": "依赖环",
+        "description": "科技之间的循环依赖与自依赖"
+      },
+      "writeFailures": {
+        "title": "写入失败",
+        "description": "未能写入目标磁盘的文件"
+      }
+    }
+  },
+  "guide": {
+    "title": "如何在游戏中启用",
+    "step1": "在文档目录的 mod 文件夹下新建一个 MOD 文件夹，并创建 descriptor.mod 文件；",
+    "step2": "将输出目录中的 localisation 文件夹整体复制到该 MOD 文件夹中；",
+    "step3": "在群星启动器的播放集 (Playset) 中启用该 MOD，并将它拖动到加载顺序的最底部。",
+    "importantNote": "重要提示：必须将本 MOD 置于加载顺序最底部，否则文本将被其他 MOD 覆盖。"
+  },
+  "empty": "无可用生成结果",
+  "guideLoadOrderTitle": "加载顺序要求"
+}

@@ -1,0 +1,10 @@
+
+[[permission]]
+identifier = "allow-resolve-environment"
+description = "Enables the resolve_environment command without any pre-configured scope."
+commands.allow = ["resolve_environment"]
+
+[[permission]]
+identifier = "deny-resolve-environment"
+description = "Denies the resolve_environment command without any pre-configured scope."
+commands.deny = ["resolve_environment"]

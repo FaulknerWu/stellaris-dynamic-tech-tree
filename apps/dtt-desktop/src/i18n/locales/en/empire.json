@@ -1,0 +1,41 @@
+{
+  "inspecting": "Inspecting save and empire data...",
+  "countryLabel": "Country #{{id}}",
+  "sections": {
+    "civics": "Civics",
+    "ethics": "Ethics",
+    "traits": "Species Traits",
+    "ascensionPerks": "Ascension Perks",
+    "traditions": "Traditions"
+  },
+  "metrics": {
+    "authority": "Authority",
+    "origin": "Origin",
+    "species": "Founder Species",
+    "countryType": "Country Type"
+  },
+  "defaults": {
+    "authority": "Unspecified",
+    "origin": "Default origin",
+    "species": "Standard biological",
+    "countryType": "Unknown type"
+  },
+  "tabs": {
+    "civics": "Ethics & Civics",
+    "traits": "Species & Traits",
+    "ascension": "Ascension & Traditions"
+  },
+  "empty": {
+    "ethics": "No ethics",
+    "civics": "No civic data",
+    "traits": "No trait data",
+    "ascensionPerks": "No ascension perks",
+    "traditions": "No tradition data"
+  },
+  "civicBadge": "Civic",
+  "playerCountrySwitch": "Player country",
+  "selectSaveHint": "Select a valid non-ironman text save from the list on the left",
+  "detail": "Details",
+  "showMore": "Show {{count}} more",
+  "showLess": "Show less"
+}

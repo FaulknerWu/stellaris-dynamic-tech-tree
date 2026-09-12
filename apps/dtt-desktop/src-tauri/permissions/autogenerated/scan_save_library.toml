@@ -1,0 +1,10 @@
+
+[[permission]]
+identifier = "allow-scan-save-library"
+description = "Enables the scan_save_library command without any pre-configured scope."
+commands.allow = ["scan_save_library"]
+
+[[permission]]
+identifier = "deny-scan-save-library"
+description = "Denies the scan_save_library command without any pre-configured scope."
+commands.deny = ["scan_save_library"]

@@ -1,0 +1,13 @@
+target/
+
+*.log
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+test_data/
+
+node_modules/
+apps/dtt-desktop/dist/
+apps/dtt-desktop/src-tauri/gen/

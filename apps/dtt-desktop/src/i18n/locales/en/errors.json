@@ -1,0 +1,19 @@
+{
+  "codeHints": {
+    "INVALID_ENVIRONMENT": "Environment paths are incomplete or invalid. Expand the Environment card to check and supply the Stellaris game root and documents directory.",
+    "LAUNCHER_DATABASE_UNAVAILABLE": "Launcher database (launcher-v2.sqlite) is unreadable or missing. Please browse and select a valid database file.",
+    "SAVE_UNAVAILABLE": "Specified save file does not exist or lacks read permission. Please refresh the save library or reselect a save.",
+    "SAVE_CONTAINER_CORRUPT": "Save container or internal gamestate structure is corrupt. Please try another save.",
+    "UNSUPPORTED_BINARY_SAVE": "Ironman or binary saves cannot be parsed. DTT only supports non-ironman text saves.",
+    "PLAYER_COUNTRY_MISSING": "No player-controlled empire was found in this save file. Please confirm if this is a player save.",
+    "PLAYER_COUNTRY_REQUIRED": "Multiple player empires found in save. Please select an empire in the Empire card.",
+    "GENERATION_BUSY": "A generation task is already running. Please wait or cancel the active task before starting a new one.",
+    "GENERATION_CANCELLED": "Generation task was cancelled per user request.",
+    "INTERNAL": "An internal error occurred. You can expand the technical details below when reporting this issue."
+  },
+  "remedy": {
+    "retry": "Retry"
+  },
+  "details": "Technical Details",
+  "path": "Path: {{path}}"
+}

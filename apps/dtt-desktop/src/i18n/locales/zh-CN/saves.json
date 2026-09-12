@@ -1,0 +1,38 @@
+{
+  "title": "选择存档",
+  "sources": {
+    "local": "本地存档",
+    "steamCloud": "Steam 云存档"
+  },
+  "manualSelect": "从文件选择存档…",
+  "libraryTitle": "存档库",
+  "empireTitle": "帝国信息审查",
+  "availableCount": "{{count}} 个可用存档",
+  "manualSelectFile": "手动选择 .sav 文件",
+  "listAriaLabel": "存档列表",
+  "gameDate": "游戏星历：{{date}}",
+  "binaryWarning": "不支持铁人/二进制加密存档，请使用非铁人文本存档",
+  "corruptFallback": "存档文件损坏，无法读取",
+  "customSelection": "自定义选择",
+  "state": {
+    "text": {
+      "badge": "纯文本正常"
+    },
+    "binary": {
+      "badge": "铁人加密"
+    },
+    "corrupt": {
+      "badge": "损坏异常"
+    }
+  },
+  "empty": {
+    "local": {
+      "title": "没有找到本地存档",
+      "description": "请检查文档目录是否正确，或使用下方按钮手动选取存档。"
+    },
+    "steamCloud": {
+      "title": "没有找到云存档",
+      "description": "未检测到 Steam 云存档或 Steam 库列表为空。请确认 Steam 云同步已开启，或改用本地/手动选择。"
+    }
+  }
+}

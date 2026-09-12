@@ -1,0 +1,41 @@
+{
+  "inspecting": "正在解析存档与帝国数据…",
+  "countryLabel": "国家 #{{id}}",
+  "sections": {
+    "civics": "国民理念",
+    "ethics": "意识形态 / 思潮",
+    "traits": "物种特性",
+    "ascensionPerks": "飞升天赋",
+    "traditions": "传统"
+  },
+  "metrics": {
+    "authority": "政体形式",
+    "origin": "帝国起源",
+    "species": "主体物种",
+    "countryType": "国家类型"
+  },
+  "defaults": {
+    "authority": "未指定",
+    "origin": "默认起源",
+    "species": "标准生物",
+    "countryType": "未知类型"
+  },
+  "tabs": {
+    "civics": "思潮与国策",
+    "traits": "种族与特质",
+    "ascension": "飞升与传统"
+  },
+  "empty": {
+    "ethics": "无特定思潮",
+    "civics": "无国策数据",
+    "traits": "无特质数据",
+    "ascensionPerks": "无飞升天赋",
+    "traditions": "无传统数据"
+  },
+  "civicBadge": "国策",
+  "playerCountrySwitch": "玩家国家切换",
+  "selectSaveHint": "请在左侧列表中选择一个有效的非铁人文本存档",
+  "detail": "详细",
+  "showMore": "展开剩余 {{count}} 项",
+  "showLess": "收起"
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "DTT 主窗口所需的最小本地能力",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    "store:allow-load",
+    "store:allow-get-store",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-save",
+    "allow-get-bootstrap-data",
+    "allow-resolve-environment",
+    "allow-scan-save-library",
+    "allow-inspect-save",
+    "allow-run-generation",
+    "allow-cancel-generation",
+    "allow-open-output-directory"
+  ]
+}

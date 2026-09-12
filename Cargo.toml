@@ -1,0 +1,50 @@
+[workspace]
+members = [
+    "apps/dtt-cli",
+    "apps/dtt-desktop/src-tauri",
+    "crates/dtt-core",
+    "crates/dtt-stellaris",
+    "crates/dtt-application",
+]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+license = "MIT"
+authors = ["FaulknerWu"]
+description = "Stellaris Dynamic Technology Tree MOD generator"
+repository = "https://github.com/FaulknerWu/stellaris-dynamic-tech-tree"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive", "rc"] }
+thiserror = "2"
+anyhow = "1"
+clap = { version = "4.5", features = ["derive"] }
+jomini = { version = "0.35", default-features = false }
+rusqlite = { version = "0.40", features = ["bundled"] }
+zip = { version = "8", default-features = false, features = ["deflate"] }
+atomic-write-file = "0.3.1"
+tokio = { version = "1", features = ["sync"] }
+tauri = "2.11.5"
+tauri-build = "2.6.3"
+tauri-plugin-dialog = "2.7.2"
+tauri-plugin-opener = "2.5.4"
+tauri-plugin-store = "2.4.4"
+ts-rs = "12.0.1"
+dirs = "6"
+winreg = "0.56"
+dtt-core = { path = "crates/dtt-core" }
+dtt-stellaris = { path = "crates/dtt-stellaris" }
+dtt-application = { path = "crates/dtt-application" }
+
+[profile.dev]
+incremental = true
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

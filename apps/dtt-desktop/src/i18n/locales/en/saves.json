@@ -1,0 +1,38 @@
+{
+  "title": "Select Save Game",
+  "sources": {
+    "local": "Local Saves",
+    "steamCloud": "Steam Cloud"
+  },
+  "manualSelect": "Select Save from File...",
+  "libraryTitle": "Save Library",
+  "empireTitle": "Empire Inspection",
+  "availableCount": "{{count}} available saves",
+  "manualSelectFile": "Choose .sav file",
+  "listAriaLabel": "Save list",
+  "gameDate": "In-game date: {{date}}",
+  "binaryWarning": "Ironman/binary saves are not supported. Use a non-ironman text save.",
+  "corruptFallback": "The save file is corrupt and cannot be read",
+  "customSelection": "Custom selection",
+  "state": {
+    "text": {
+      "badge": "Plain text"
+    },
+    "binary": {
+      "badge": "Ironman"
+    },
+    "corrupt": {
+      "badge": "Corrupt"
+    }
+  },
+  "empty": {
+    "local": {
+      "title": "No local saves found",
+      "description": "Please verify your documents directory or use the button below to pick a save file manually."
+    },
+    "steamCloud": {
+      "title": "No cloud saves found",
+      "description": "No Steam cloud saves detected or Steam library list is empty. Please verify Steam Cloud synchronization."
+    }
+  }
+}

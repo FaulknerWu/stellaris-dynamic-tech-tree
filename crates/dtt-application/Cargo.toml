@@ -1,0 +1,18 @@
+[package]
+name = "dtt-application"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Shared application use cases for dtt-rs"
+
+[lib]
+name = "dtt_application"
+path = "src/lib.rs"
+
+[dependencies]
+dtt-core.workspace = true
+dtt-stellaris.workspace = true
+serde.workspace = true
+thiserror.workspace = true

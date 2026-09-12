@@ -1,0 +1,23 @@
+{
+  "dialog": {
+    "selectGameRoot": "Select Stellaris Game Directory",
+    "selectDocumentsDir": "Select Stellaris Documents Directory",
+    "selectLauncherDb": "Select launcher-v2.sqlite File",
+    "sqliteFilter": "SQLite Database"
+  },
+  "pathsTitle": "Environment Paths",
+  "settingsTitle": "Generation Settings",
+  "paths": {
+    "gameRoot": "1. Stellaris Install Path",
+    "documentsDir": "2. Documents Directory (Paradox Interactive)",
+    "launcherDb": "3. Launcher Database (launcher-v2.sqlite)",
+    "outputDir": "4. Output Directory"
+  },
+  "placeholders": {
+    "gameRoot": "Stellaris install root is not set",
+    "documentsDir": "Documents directory is not set",
+    "launcherDb": "Launcher database is not set",
+    "outputDir": "Application directory"
+  },
+  "outputDirBadge": "App directory"
+}

@@ -1,0 +1,51 @@
+{
+  "steps": {
+    "settings": "环境与设置",
+    "saves": "存档与帝国",
+    "generate": "生成执行",
+    "results": "结果与诊断"
+  },
+  "actions": {
+    "nextToSaves": "下一步：选择存档",
+    "prevToSettings": "上一步：环境与设置",
+    "startGeneration": "开始生成科技树",
+    "cancel": "取消生成",
+    "cancelling": "正在取消…",
+    "openOutputDirectory": "打开输出目录",
+    "changeSave": "换一个存档",
+    "modifySettings": "修改设置",
+    "modify": "修改",
+    "restore": "恢复",
+    "reset": "恢复自动探测",
+    "refresh": "重新扫描",
+    "rescanEnvironment": "自动重新检测",
+    "close": "关闭",
+    "retry": "重试"
+  },
+  "settings": {
+    "title": "设置",
+    "uiLocale": "界面语言",
+    "theme": "主题外观",
+    "themeLight": "浅色模式",
+    "themeDark": "深色模式",
+    "themeSystem": "跟随系统",
+    "about": "关于 DTT",
+    "version": "版本",
+    "license": "开源协议",
+    "aboutText": "Dynamic Technology Tree 是一个用于从群星存档和已加载 MOD 自动计算、导出科技依赖树与本地化词条的工具。"
+  },
+  "wizard": {
+    "ariaLabel": "步骤向导"
+  },
+  "hints": {
+    "needEnvironment": "请先配置并检测群星安装目录与文档目录",
+    "settingsAutosaved": "所有环境与参数变动已自动保存",
+    "saveSelected": "已选中：{{name}}",
+    "selectSave": "请选择存档",
+    "generationReady": "生成完成，可直接在游戏内加载 MOD"
+  },
+  "status": {
+    "ready": "已就绪",
+    "incomplete": "未就绪"
+  }
+}

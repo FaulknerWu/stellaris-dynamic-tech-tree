@@ -1,0 +1,12 @@
+{
+  "name": "dtt-rs",
+  "private": true,
+  "packageManager": "pnpm@11.24.0",
+  "scripts": {
+    "bindings": "pnpm --filter dtt-desktop bindings",
+    "desktop:build": "pnpm --filter dtt-desktop build",
+    "desktop:dev": "pnpm --filter dtt-desktop tauri dev",
+    "desktop:tauri": "pnpm --filter dtt-desktop tauri",
+    "tauri": "pnpm --filter dtt-desktop tauri"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "dialog": {
+    "selectGameRoot": "选择群星安装根目录",
+    "selectDocumentsDir": "选择群星文档目录",
+    "selectLauncherDb": "选择启动器数据库文件",
+    "sqliteFilter": "SQLite 数据库"
+  },
+  "pathsTitle": "环境路径检测与配置",
+  "settingsTitle": "生成参数与策略配置",
+  "paths": {
+    "gameRoot": "1. 群星本体安装路径",
+    "documentsDir": "2. 用户文档目录 (Paradox Interactive)",
+    "launcherDb": "3. 启动器数据库 (launcher-v2.sqlite)",
+    "outputDir": "4. 生成结果输出目录"
+  },
+  "placeholders": {
+    "gameRoot": "未设置群星安装根目录",
+    "documentsDir": "未设置文档目录",
+    "launcherDb": "未设置启动器数据库",
+    "outputDir": "程序执行目录"
+  },
+  "outputDirBadge": "程序所在目录"
+}

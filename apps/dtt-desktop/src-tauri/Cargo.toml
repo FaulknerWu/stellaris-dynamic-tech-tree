@@ -1,0 +1,29 @@
+[package]
+name = "dtt-desktop"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Tauri desktop interface for dtt-rs"
+
+[lib]
+name = "dtt_desktop"
+path = "src/lib.rs"
+
+[[bin]]
+name = "dtt-gui"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build.workspace = true
+
+[dependencies]
+dtt-application.workspace = true
+serde.workspace = true
+tauri.workspace = true
+tokio.workspace = true
+tauri-plugin-dialog.workspace = true
+tauri-plugin-opener.workspace = true
+tauri-plugin-store.workspace = true
+ts-rs.workspace = true

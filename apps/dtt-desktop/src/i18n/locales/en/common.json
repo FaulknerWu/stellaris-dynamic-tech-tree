@@ -1,0 +1,51 @@
+{
+  "steps": {
+    "settings": "Environment & Settings",
+    "saves": "Save & Empire",
+    "generate": "Generate",
+    "results": "Results & Diagnostics"
+  },
+  "actions": {
+    "nextToSaves": "Next: Select Save",
+    "prevToSettings": "Back: Environment & Settings",
+    "startGeneration": "Start Generation",
+    "cancel": "Cancel",
+    "cancelling": "Cancelling...",
+    "openOutputDirectory": "Open Output Directory",
+    "changeSave": "Change Save",
+    "modifySettings": "Modify Settings",
+    "modify": "Modify",
+    "restore": "Reset",
+    "reset": "Reset to Detected",
+    "refresh": "Rescan",
+    "rescanEnvironment": "Rescan Environment",
+    "close": "Close",
+    "retry": "Retry"
+  },
+  "settings": {
+    "title": "Settings",
+    "uiLocale": "Interface Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "about": "About DTT",
+    "version": "Version",
+    "license": "License",
+    "aboutText": "Dynamic Technology Tree is a desktop tool for computing and exporting technology dependency trees and localisation from Stellaris saves and active mods."
+  },
+  "wizard": {
+    "ariaLabel": "Wizard steps"
+  },
+  "hints": {
+    "needEnvironment": "Configure and detect the Stellaris install and documents directories first",
+    "settingsAutosaved": "Environment and settings changes are saved automatically",
+    "saveSelected": "Selected: {{name}}",
+    "selectSave": "Select a save",
+    "generationReady": "Generation complete. You can load the mod in-game."
+  },
+  "status": {
+    "ready": "Ready",
+    "incomplete": "Incomplete"
+  }
+}

@@ -1,0 +1,10 @@
+
+[[permission]]
+identifier = "allow-run-generation"
+description = "Enables the run_generation command without any pre-configured scope."
+commands.allow = ["run_generation"]
+
+[[permission]]
+identifier = "deny-run-generation"
+description = "Denies the run_generation command without any pre-configured scope."
+commands.deny = ["run_generation"]
