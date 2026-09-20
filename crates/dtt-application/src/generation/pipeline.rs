@@ -94,6 +94,7 @@ pub fn run_generation(request: &RunGenerationRequest) -> Result<RunGenerationRes
 
     notify_stage(request, GenerationStage::Cycles)?;
     let report = build_report(
+        manifest.missing_mod_descriptors.clone(),
         eligibility,
         &graph,
         &swaps,

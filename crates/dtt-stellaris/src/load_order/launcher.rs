@@ -36,12 +36,23 @@ pub(super) fn read(path: &Path) -> Result<Vec<ModRef>> {
     for row in rows {
         let row = row.map_err(|error| launcher_err(path, error))?;
         let (root, descriptor_path) = resolve_db_mod_root(row.dir_path.as_deref())?;
-        let replace_paths = descriptor::read_replace_paths(&descriptor_path)?;
+        let (replace_paths, descriptor_missing) =
+            match descriptor::read_replace_paths(&descriptor_path) {
+                Ok(paths) => (paths, false),
+                // 部分 MOD 未提供标准描述文件；目录仍须存在，避免把失效的安装路径当作正常 MOD。
+                Err(Error::Io { source, .. })
+                    if source.kind() == std::io::ErrorKind::NotFound && root.is_dir() =>
+                {
+                    (Vec::new(), true)
+                }
+                Err(error) => return Err(error),
+            };
         let name = required_display_name(row.display_name.as_deref())?;
         out.push(ModRef {
             name,
             root,
             replace_paths,
+            descriptor_missing,
         });
     }
     Ok(out)

@@ -31,6 +31,10 @@
     "title": "Diagnostics",
     "truncated": "There are {{count}} more diagnostic items not displayed here. See the report file for full details.",
     "categories": {
+      "loadOrder": {
+        "title": "Mod Loading Notices",
+        "description": "Mods loaded without descriptor files"
+      },
       "unknownConditions": {
         "title": "Unknown Conditions",
         "description": "Undetermined triggers and affected technologies"

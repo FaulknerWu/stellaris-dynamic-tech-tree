@@ -10,6 +10,7 @@ use serde::Serialize;
 
 #[derive(Debug, Default, Clone, Serialize)]
 pub struct GenerationReport {
+    pub missing_mod_descriptors: Vec<String>,
     pub eligible: Vec<Id>,
     pub uncertain: Vec<Id>,
     pub excluded_identity: Vec<Id>,
@@ -45,6 +46,15 @@ impl GenerationReport {
     pub(crate) fn format_text(&self) -> String {
         let mut report = String::new();
         report.push_str("=== dtt-save-report ===\n\n");
+
+        report.push_str(&format!(
+            "[缺失 MOD 描述文件] 数量={}\n",
+            self.missing_mod_descriptors.len()
+        ));
+        for name in &self.missing_mod_descriptors {
+            report.push_str(&format!("  - {name}：缺少 descriptor.mod，已跳过描述文件读取并继续加载 MOD；未应用该文件中的 replace_path 规则。\n"));
+        }
+        report.push('\n');
 
         report.push_str("[eligibility]\n");
         report.push_str(&format!("  eligible: {}\n", self.eligible.len()));
@@ -191,6 +201,7 @@ impl GenerationReport {
 }
 
 pub(super) fn build_report(
+    missing_mod_descriptors: Vec<String>,
     eligibility: EligibilityReport,
     graph: &Graph,
     swaps: &SwapResolution,
@@ -237,6 +248,7 @@ pub(super) fn build_report(
     let deferred_triggers = merge_deferred_trigger_diagnostics(&eligibility, swaps);
 
     GenerationReport {
+        missing_mod_descriptors,
         eligible: eligibility.eligible,
         uncertain: eligibility.uncertain,
         excluded_identity: eligibility.excluded_identity,

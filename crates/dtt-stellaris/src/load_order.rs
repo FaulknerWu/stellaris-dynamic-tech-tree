@@ -15,6 +15,7 @@ const BASE_GAME_NAME: &str = "<base game>";
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Manifest {
     pub(crate) sources: Vec<SourceEntry>,
+    pub missing_mod_descriptors: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,9 +54,11 @@ struct ModRef {
     name: String,
     root: PathBuf,
     replace_paths: Vec<String>,
+    descriptor_missing: bool,
 }
 
 fn build_manifest(stellaris_root: &Path, mods: Vec<ModRef>) -> Manifest {
+    let mut missing_mod_descriptors = Vec::new();
     let mut sources = Vec::with_capacity(mods.len() + 1);
     sources.push(SourceEntry {
         index: 0,
@@ -64,6 +67,9 @@ fn build_manifest(stellaris_root: &Path, mods: Vec<ModRef>) -> Manifest {
         replace_paths: Vec::new(),
     });
     for (index, module) in mods.into_iter().enumerate() {
+        if module.descriptor_missing {
+            missing_mod_descriptors.push(module.name.clone());
+        }
         sources.push(SourceEntry {
             index: (index + 1) as u32,
             name: module.name,
@@ -71,7 +77,10 @@ fn build_manifest(stellaris_root: &Path, mods: Vec<ModRef>) -> Manifest {
             replace_paths: module.replace_paths,
         });
     }
-    Manifest { sources }
+    Manifest {
+        sources,
+        missing_mod_descriptors,
+    }
 }
 
 pub(crate) fn normalise_rel(path: &str) -> String {

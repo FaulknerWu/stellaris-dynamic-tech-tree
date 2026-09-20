@@ -183,6 +183,7 @@ pub struct GenerationResultDto {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 pub struct GenerationDiagnosticsDto {
+    pub load_order: Vec<GenerationDiagnosticItemDto>,
     pub unknown_conditions: Vec<GenerationDiagnosticItemDto>,
     pub deferred_conditions: Vec<GenerationDiagnosticItemDto>,
     pub game_data: Vec<GenerationDiagnosticItemDto>,
@@ -223,6 +224,17 @@ impl From<application::RunGenerationResult> for GenerationResultDto {
                         .collect::<Vec<_>>()
                         .join(", ")
                 )),
+            })
+            .collect();
+        let load_order = value
+            .report
+            .missing_mod_descriptors
+            .iter()
+            .map(|name| GenerationDiagnosticItemDto {
+                summary: format!("{name}：缺少 descriptor.mod"),
+                detail: Some(
+                    "已跳过描述文件读取并继续加载 MOD；未应用该文件中的 replace_path 规则。".into(),
+                ),
             })
             .collect();
         let deferred_conditions = value
@@ -329,6 +341,7 @@ impl From<application::RunGenerationResult> for GenerationResultDto {
             failed: value.output.failed,
             report_path: value.output.report_path,
             diagnostics: GenerationDiagnosticsDto {
+                load_order,
                 unknown_conditions,
                 deferred_conditions,
                 game_data,

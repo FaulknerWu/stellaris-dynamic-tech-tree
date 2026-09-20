@@ -238,6 +238,10 @@ export function ResultsPage({ state }: ResultsPageProps) {
               items={result.diagnostics.unknownConditions}
             />
             <DiagnosticSection
+              categoryKey="loadOrder"
+              items={result.diagnostics.loadOrder}
+            />
+            <DiagnosticSection
               categoryKey="deferredConditions"
               items={result.diagnostics.deferredConditions}
             />

@@ -31,6 +31,10 @@
     "title": "诊断信息",
     "truncated": "另有 {{count}} 条诊断信息未在此处全部展示，详情请查看诊断报告文件。",
     "categories": {
+      "loadOrder": {
+        "title": "MOD 加载提示",
+        "description": "缺少描述文件、已继续加载的 MOD"
+      },
       "unknownConditions": {
         "title": "未知条件",
         "description": "无法判定的触发器及受影响的科技"
