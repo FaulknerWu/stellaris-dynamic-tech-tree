@@ -17,6 +17,7 @@ import type {
   ScanSaveLibraryRequestDto,
 } from "@/ipc/bindings";
 import { GenerationPage } from "@/features/generation/GenerationPage";
+import { GenerationErrorDialog } from "@/features/generation/GenerationErrorDialog";
 import { ResultsPage } from "@/features/results/ResultsPage";
 import { SaveAndEmpirePage } from "@/features/saves/SaveAndEmpirePage";
 import { EnvironmentAndSettingsPage } from "@/features/settings/EnvironmentAndSettingsPage";
@@ -349,7 +350,14 @@ export function App() {
         />
       )}
 
-      {state.step === "generate" && <GenerationPage state={state} />}
+      {state.step === "generate" && (
+        state.run.status === "failed" ? (
+          <GenerationErrorDialog
+            error={state.run.error}
+            onReturn={() => dispatch({ type: "DISMISS_GENERATION_ERROR" })}
+          />
+        ) : <GenerationPage state={state} />
+      )}
 
       {state.step === "results" && <ResultsPage state={state} />}
     </AppShell>

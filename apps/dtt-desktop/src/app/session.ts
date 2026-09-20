@@ -124,6 +124,7 @@ export type SessionAction =
   | { type: "GENERATION_DONE"; result: GenerationResultDto }
   | { type: "GENERATION_CANCELLED" }
   | { type: "GENERATION_FAIL"; error: AppError }
+  | { type: "DISMISS_GENERATION_ERROR" }
   | { type: "NAVIGATE_STEP"; step: WizardStep }
   | { type: "RESET_SAVE_SELECTION" };
 
@@ -382,8 +383,16 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case "GENERATION_FAIL":
       return {
         ...state,
-        step: "saves",
+        step: "generate",
         run: { status: "failed", error: action.error },
+      };
+
+    case "DISMISS_GENERATION_ERROR":
+      if (state.run.status !== "failed") return state;
+      return {
+        ...state,
+        step: "saves",
+        run: { status: "idle" },
       };
 
     case "NAVIGATE_STEP":

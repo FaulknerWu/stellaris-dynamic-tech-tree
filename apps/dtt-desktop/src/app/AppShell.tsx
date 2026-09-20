@@ -271,7 +271,7 @@ export function AppShell({
             </>
           )}
 
-          {state.step === "generate" && (
+          {state.step === "generate" && isGenerating && (
             <Button
               type="button"
               variant="outline"

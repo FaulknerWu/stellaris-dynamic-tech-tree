@@ -42,6 +42,18 @@
       }
     }
   },
+  "failure": {
+    "title": "Generation Failed · Error Report",
+    "description": "Generation has stopped. Copy the error report to report the issue, or return to save selection.",
+    "code": "Error code",
+    "message": "Message",
+    "path": "Related path",
+    "detail": "Details",
+    "copy": "Copy report",
+    "copied": "Error report copied",
+    "copyFailed": "Copy failed. Select the report above to copy it manually, or try again.",
+    "return": "Return"
+  },
   "running": {
     "title": "Generating Technology Tree",
     "longWaitHint": "Reading tech definitions and localizations. This step may take longer if you have many active mods...",
