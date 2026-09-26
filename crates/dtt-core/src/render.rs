@@ -5,6 +5,9 @@ use serde::{Deserialize, Serialize};
 use crate::graph::Graph;
 use crate::technology::{Id, Prerequisites};
 
+#[cfg(test)]
+mod tests;
+
 const TREE_BAR: &str = "|   ";
 const TREE_EMPTY: &str = "    ";
 const TREE_BRANCH: &str = "|-";

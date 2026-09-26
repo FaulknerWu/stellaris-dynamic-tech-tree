@@ -14,7 +14,7 @@ pub struct PlayerCountryCandidate {
 }
 
 pub fn player_country_candidates(gamestate: &[u8]) -> Result<Vec<PlayerCountryCandidate>> {
-    let document = ClausewitzDocument::parse(gamestate)?;
+    let document = ClausewitzDocument::parse_save(gamestate)?;
     let root = document.root();
     Ok(collect_player_country_ids(&root)?
         .into_iter()
@@ -23,7 +23,7 @@ pub fn player_country_candidates(gamestate: &[u8]) -> Result<Vec<PlayerCountryCa
 }
 
 pub fn extract_snapshot_for_country(gamestate: &[u8], country_id: i64) -> Result<Snapshot> {
-    let document = ClausewitzDocument::parse(gamestate)?;
+    let document = ClausewitzDocument::parse_save(gamestate)?;
     let root = document.root();
     let country = block_by_id(&root, "country", country_id)?;
     let mut snapshot = build_snapshot(&root, country)?;

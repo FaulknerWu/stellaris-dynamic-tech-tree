@@ -8,6 +8,9 @@ use crate::condition::{
 use crate::technology::{Area, Catalog, Definition, Id};
 use crate::{Error, Result};
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Debug, Clone, Serialize)]
 pub struct SwapEntry {
     pub base_id: Id,

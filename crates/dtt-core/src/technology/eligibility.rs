@@ -9,6 +9,9 @@ use crate::condition::{
 use crate::technology::{Catalog, Id, Prerequisites};
 use crate::{Error, Result};
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Debug, Default, Clone, Serialize)]
 pub struct EligibilityReport {
     pub eligible: Vec<Id>,

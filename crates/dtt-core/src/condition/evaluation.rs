@@ -7,6 +7,9 @@ use super::{
     UnknownConditionReason,
 };
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Debug, Clone)]
 pub struct TriggerEvaluation {
     pub bounds: TruthBounds,

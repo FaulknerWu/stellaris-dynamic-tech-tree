@@ -64,6 +64,10 @@ impl<'data> ClausewitzDocument<'data> {
         if let Err(error) = std::str::from_utf8(data) {
             return Err(ClausewitzError::invalid_utf8(error.valid_up_to()));
         }
+        Self::parse_save(data)
+    }
+
+    pub(crate) fn parse_save(data: &'data [u8]) -> Result<Self, ClausewitzError> {
         let tape = TextTape::from_slice(data).map_err(ClausewitzError::from_jomini)?;
         Ok(Self { tape })
     }

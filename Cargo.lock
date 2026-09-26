@@ -1037,6 +1037,7 @@ dependencies = [
  "jomini",
  "rusqlite",
  "serde",
+ "tempfile",
  "thiserror 2.0.20",
  "winreg 0.56.0",
  "zip",

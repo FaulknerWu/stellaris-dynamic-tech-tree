@@ -12,7 +12,7 @@ pub struct SaveMetadata {
 
 impl SaveMetadata {
     pub(super) fn parse(bytes: &[u8]) -> Result<Self> {
-        let document = ClausewitzDocument::parse(bytes)?;
+        let document = ClausewitzDocument::parse_save(bytes)?;
         let root = document.root();
         let mut metadata = Self::default();
 
