@@ -1,8 +1,9 @@
 use dtt_core::graph::Graph;
-use dtt_core::render::{RenderInput, RenderLimits, render_tree};
+use dtt_core::render::{RenderInput, RenderLimits, RenderOutcome, render_tree};
 use dtt_core::technology::{Area, Catalog, Definition, Id, Prerequisites, SwapResolution};
 
-use super::SupportedLanguage;
+use dtt_i18n::{TranslationError, Translator};
+use std::cell::RefCell;
 
 const TREE_HEADER: &str = "\\n\\n§H$technology_tree_title$§!";
 const TREE_EMPTY_TRAILER: &str = "§Y$tech_tree_max_level$§!";
@@ -16,16 +17,15 @@ pub fn render_tree_content(
     technologies: &Catalog,
     swaps: &SwapResolution,
     limits: &RenderLimits,
-    language: SupportedLanguage,
-) -> String {
-    let requires_text = language.strings().requires;
+    translator: &Translator,
+) -> Result<String, TranslationError> {
+    let failure = RefCell::new(None);
     let format_node = |technology_id: &Id, additional: &Prerequisites| {
-        format_node_line(
-            technology_id,
-            additional,
-            technologies,
-            swaps,
-            requires_text,
+        format_node_line(technology_id, additional, technologies, swaps, translator).unwrap_or_else(
+            |error| {
+                *failure.borrow_mut() = Some(error);
+                String::new()
+            },
         )
     };
     let render_input = RenderInput {
@@ -33,7 +33,18 @@ pub fn render_tree_content(
         limits: limits.clone(),
         format_node: &format_node,
     };
-    format_tree_content(&render_tree(root, &render_input))
+    let body = match render_tree(root, &render_input) {
+        RenderOutcome::Tree(body) => body,
+        RenderOutcome::OverlongRoot {
+            root,
+            child_count,
+            limit,
+        } => translator.tree_omitted(root.as_str(), child_count, limit)?,
+    };
+    if let Some(error) = failure.into_inner() {
+        return Err(error);
+    }
+    Ok(format_tree_content(&body))
 }
 
 fn format_tree_content(body: &str) -> String {
@@ -51,8 +62,8 @@ fn format_node_line(
     additional_prerequisites: &Prerequisites,
     technologies: &Catalog,
     swaps: &SwapResolution,
-    requires_text: &str,
-) -> String {
+    translator: &Translator,
+) -> Result<String, TranslationError> {
     let mut line = format_single_technology(technology_id, technologies, swaps);
     let mut additional: Vec<String> = additional_prerequisites
         .all_of
@@ -60,27 +71,24 @@ fn format_node_line(
         .filter(|prerequisite| technologies.contains(prerequisite))
         .map(|prerequisite| format_single_technology(prerequisite, technologies, swaps))
         .collect();
-    additional.extend(
-        additional_prerequisites
-            .any_of_groups
+    for group in &additional_prerequisites.any_of_groups {
+        let mut alternatives = group
             .iter()
-            .filter_map(|group| {
-                let alternatives: Vec<String> = group
-                    .iter()
-                    .filter(|prerequisite| technologies.contains(prerequisite))
-                    .map(|prerequisite| format_single_technology(prerequisite, technologies, swaps))
-                    .collect();
-                (!alternatives.is_empty()).then(|| format!("({})", alternatives.join(" OR ")))
-            }),
-    );
+            .filter(|id| technologies.contains(id))
+            .map(|id| format_single_technology(id, technologies, swaps));
+        if let Some(mut combined) = alternatives.next() {
+            for alternative in alternatives {
+                combined = translator.game_or(&combined, &alternative)?;
+            }
+            additional.push(format!("({combined})"));
+        }
+    }
 
     if !additional.is_empty() {
-        line.push_str(&format!(
-            " [§R{requires_text}§! {}]",
-            additional.join(" , ")
-        ));
+        line.push(' ');
+        line.push_str(&translator.game_requires(&additional.join(" , "))?);
     }
-    line
+    Ok(line)
 }
 
 fn format_single_technology(

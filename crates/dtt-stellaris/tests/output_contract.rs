@@ -3,15 +3,15 @@ use std::fs;
 use std::path::Path;
 
 use dtt_core::technology::Id;
-use dtt_stellaris::output::{SupportedLanguage, WriteOutcome, WriteRequest, write};
+use dtt_stellaris::output::{GameLanguage, WriteOutcome, WriteRequest, write};
 
-fn generate(root: &Path, languages: &[SupportedLanguage], eligible: &[Id]) -> WriteOutcome {
+fn generate(root: &Path, languages: &[GameLanguage], eligible: &[Id]) -> WriteOutcome {
     let trees = HashMap::from([(
-        SupportedLanguage::English,
+        GameLanguage::English,
         HashMap::from([(Id::from("base"), "Tree\\nNext".into())]),
     )]);
     let descriptions = HashMap::from([(
-        SupportedLanguage::English,
+        GameLanguage::English,
         HashMap::from([(Id::from("base"), "Original ".into())]),
     )]);
     write(&WriteRequest {
@@ -35,7 +35,7 @@ fn read_localisation(root: &Path, path: &str) -> String {
 #[test]
 fn output_has_bom_active_ids_original_descriptions_and_a_plain_text_report() {
     let temp = tempfile::tempdir().unwrap();
-    let result = generate(temp.path(), &[SupportedLanguage::English], &["base".into()]);
+    let result = generate(temp.path(), &[GameLanguage::English], &["base".into()]);
     assert!(result.complete, "{:?}", result.failed);
     assert_eq!(result.written.len(), 3);
     let main = read_localisation(
@@ -51,7 +51,7 @@ fn output_has_bom_active_ids_original_descriptions_and_a_plain_text_report() {
     );
     assert_eq!(
         replaced,
-        "l_english:\n variant_desc:0 \"Original (Tier:2)$variant_techtree$\""
+        "l_english:\n variant_desc:0 \"Original (Tier: 2)$variant_techtree$\""
     );
     let report = temp.path().join("dtt-save-report.txt");
     assert_eq!(fs::read(&report).unwrap(), b"synthetic report\n");
@@ -68,26 +68,26 @@ fn switching_languages_removes_only_owned_files_and_preserves_user_files() {
     assert!(
         generate(
             root,
-            &[SupportedLanguage::English, SupportedLanguage::French],
+            &[GameLanguage::English, GameLanguage::SimpChinese],
             &["base".into()]
         )
         .complete
     );
-    let user = root.join("localisation/french/user_l_french.yml");
-    let unknown = root.join("localisation/french/replace/zztechtree_custom.yml");
+    let user = root.join("localisation/simp_chinese/user_l_simp_chinese.yml");
+    let unknown = root.join("localisation/simp_chinese/replace/zztechtree_custom.yml");
     fs::write(&user, "user content").unwrap();
     fs::write(&unknown, "keep this too").unwrap();
-    let result = generate(root, &[SupportedLanguage::English], &["base".into()]);
+    let result = generate(root, &[GameLanguage::English], &["base".into()]);
     assert!(result.complete, "{:?}", result.failed);
     assert_eq!(result.removed.len(), 2);
     assert!(
         !root
-            .join("localisation/french/zztechtreemain_l_french.yml")
+            .join("localisation/simp_chinese/zztechtreemain_l_simp_chinese.yml")
             .exists()
     );
     assert!(
         !root
-            .join("localisation/french/replace/zztechtreereplaced_l_french.yml")
+            .join("localisation/simp_chinese/replace/zztechtreereplaced_l_simp_chinese.yml")
             .exists()
     );
     assert_eq!(fs::read_to_string(user).unwrap(), "user content");
@@ -98,7 +98,7 @@ fn switching_languages_removes_only_owned_files_and_preserves_user_files() {
 fn a_blocked_language_directory_reports_partial_failure_and_still_writes_report() {
     let temp = tempfile::tempdir().unwrap();
     fs::write(temp.path().join("localisation"), "not a directory").unwrap();
-    let result = generate(temp.path(), &[SupportedLanguage::English], &["base".into()]);
+    let result = generate(temp.path(), &[GameLanguage::English], &["base".into()]);
     assert!(!result.complete);
     assert!(!result.failed.is_empty());
     assert_eq!(result.written.len(), 1);
@@ -120,7 +120,7 @@ fn repeated_output_is_byte_identical_regardless_of_eligible_input_order() {
     assert!(
         generate(
             temp.path(),
-            &[SupportedLanguage::English],
+            &[GameLanguage::English],
             &["z".into(), "base".into()]
         )
         .complete
@@ -132,7 +132,7 @@ fn repeated_output_is_byte_identical_regardless_of_eligible_input_order() {
     assert!(
         generate(
             temp.path(),
-            &[SupportedLanguage::English],
+            &[GameLanguage::English],
             &["base".into(), "z".into()]
         )
         .complete
@@ -142,4 +142,55 @@ fn repeated_output_is_byte_identical_regardless_of_eligible_input_order() {
         .map(|path| fs::read(temp.path().join(path)).unwrap())
         .collect();
     assert_eq!(before, after);
+}
+
+#[test]
+fn both_output_languages_preserve_markup_and_escape_once() {
+    let temp = tempfile::tempdir().unwrap();
+    let id = Id::from("base");
+    let value =
+        "quote \"raw\" and \\\"escaped\\\"\n$tech_id$ §H £physics£ path C:\\mods\\x literal \\n";
+    let languages = [GameLanguage::English, GameLanguage::SimpChinese];
+    let descriptions = languages
+        .into_iter()
+        .map(|language| (language, HashMap::from([(id.clone(), value.into())])))
+        .collect();
+    let result = write(&WriteRequest {
+        eligible: &[id.clone()],
+        render_results_by_language: &HashMap::new(),
+        original_descriptions_by_language: &descriptions,
+        tiers: &HashMap::new(),
+        display_ids: &HashMap::new(),
+        languages: &languages,
+        output_root_dir: temp.path(),
+        report_body: "report",
+    });
+    assert!(result.complete);
+    for language in languages {
+        let code = language.code();
+        let output = read_localisation(
+            temp.path(),
+            &format!("localisation/{code}/replace/zztechtreereplaced_l_{code}.yml"),
+        );
+        assert!(output.starts_with(&format!("l_{code}:\n")));
+        assert!(!output.contains(['\r', '\u{2068}', '\u{2069}']));
+        assert!(output.contains("$tech_id$ §H £physics£"));
+        assert!(
+            output.contains("quote \\\"raw\\\" and \\\"escaped\\\"\\n"),
+            "{output}"
+        );
+        assert!(output.contains("literal \\n"));
+    }
+}
+#[test]
+fn legacy_language_cleanup_keeps_unowned_files() {
+    let temp = tempfile::tempdir().unwrap();
+    let dir = temp.path().join("localisation/french");
+    fs::create_dir_all(dir.join("replace")).unwrap();
+    fs::write(dir.join("zztechtreemain_l_french.yml"), "legacy").unwrap();
+    fs::write(dir.join("user.yml"), "user").unwrap();
+    let result = generate(temp.path(), &[GameLanguage::English], &[]);
+    assert!(result.complete);
+    assert_eq!(result.removed.len(), 1);
+    assert_eq!(fs::read_to_string(dir.join("user.yml")).unwrap(), "user");
 }

@@ -6,7 +6,8 @@ use std::path::Path;
 use atomic_write_file::AtomicWriteFile;
 use dtt_core::technology::Id;
 
-use super::{SupportedLanguage, WriteOutcome, WriteRequest};
+use super::{GameLanguage, WriteFailure, WriteOperation, WriteOutcome, WriteRequest};
+use dtt_i18n::{Domain, TranslationError, Translator};
 
 const MAIN_LOC_TEMPLATE: &str = "zztechtreemain_l_{lang}.yml";
 const REPLACED_LOC_TEMPLATE: &str = "zztechtreereplaced_l_{lang}.yml";
@@ -30,22 +31,42 @@ pub fn write(input: &WriteRequest) -> WriteOutcome {
             .join(REPLACE_DIR_NAME)
             .join(REPLACED_LOC_TEMPLATE.replace("{lang}", lang));
 
+        let translator = match Translator::new(language.locale(), Domain::Game) {
+            Ok(translator) => translator,
+            Err(error) => {
+                outcome
+                    .failed
+                    .push(WriteFailure::new(&main_path, WriteOperation::Format, error));
+                continue;
+            }
+        };
         let main_body = build_main_for_lang(
             *language,
+            &translator,
             &sorted_eligible,
             input.render_results_by_language.get(language),
             input.display_ids,
         );
-        write_yml(&main_path, &main_body, &mut outcome);
 
         let replaced_body = build_replaced_for_lang(
             *language,
+            &translator,
             &sorted_eligible,
             input.original_descriptions_by_language.get(language),
             input.tiers,
             input.display_ids,
         );
-        write_yml(&replaced_path, &replaced_body, &mut outcome);
+        match (main_body, replaced_body) {
+            (Ok(main), Ok(replaced)) => {
+                write_yml(&main_path, &main, &mut outcome);
+                write_yml(&replaced_path, &replaced, &mut outcome);
+            }
+            (Err(error), _) | (_, Err(error)) => {
+                outcome
+                    .failed
+                    .push(WriteFailure::new(&main_path, WriteOperation::Format, error))
+            }
+        }
     }
 
     cleanup_stale_language_files(input, &mut outcome);
@@ -60,7 +81,7 @@ pub fn write(input: &WriteRequest) -> WriteOutcome {
         }
         Err(e) => outcome
             .failed
-            .push(format!("{}: {e}", report_path.display())),
+            .push(WriteFailure::new(&report_path, WriteOperation::Write, e)),
     }
 
     outcome.complete = outcome.failed.is_empty();
@@ -68,17 +89,23 @@ pub fn write(input: &WriteRequest) -> WriteOutcome {
 }
 
 fn build_main_for_lang(
-    language: SupportedLanguage,
+    language: GameLanguage,
+    translator: &Translator,
     eligible: &[Id],
     render_results: Option<&HashMap<Id, String>>,
     display_ids: &HashMap<Id, Id>,
-) -> String {
+) -> Result<String, TranslationError> {
     let lang = language.code();
-    let strings = language.strings();
     let mut lines: Vec<String> = Vec::with_capacity(eligible.len() + 3);
     lines.push(format!("l_{lang}:"));
-    lines.push(format!(" technology_tree_title:0 \"{}\"", strings.title));
-    lines.push(format!(" tech_tree_max_level:0 \"{}\"", strings.top_level));
+    lines.push(format!(
+        " technology_tree_title:0 \"{}\"",
+        escape_value(&translator.game_title()?)
+    ));
+    lines.push(format!(
+        " tech_tree_max_level:0 \"{}\"",
+        escape_value(&translator.game_max_level()?)
+    ));
 
     for id in eligible {
         let tree = render_results
@@ -86,21 +113,22 @@ fn build_main_for_lang(
             .map(String::as_str)
             .unwrap_or("");
         let active = active_id_of(id, display_ids);
+        let tree = escape_value(tree);
         lines.push(format!(" {active}_techtree:0 \"{tree}\""));
     }
 
-    lines.join("\n")
+    Ok(lines.join("\n"))
 }
 
 fn build_replaced_for_lang(
-    language: SupportedLanguage,
+    language: GameLanguage,
+    translator: &Translator,
     eligible: &[Id],
     original_descriptions: Option<&HashMap<Id, String>>,
     tiers: &HashMap<Id, i32>,
     display_ids: &HashMap<Id, Id>,
-) -> String {
+) -> Result<String, TranslationError> {
     let lang = language.code();
-    let strings = language.strings();
     let mut lines: Vec<String> = Vec::with_capacity(eligible.len() + 1);
     lines.push(format!("l_{lang}:"));
 
@@ -112,21 +140,13 @@ fn build_replaced_for_lang(
             .unwrap_or("");
         let tier = tiers.get(id).copied().unwrap_or(0);
 
-        let value = if original.is_empty() {
-            format!(
-                "({label}{tier})${active}_techtree$",
-                label = strings.tier_label
-            )
-        } else {
-            format!(
-                "{original}({label}{tier})${active}_techtree$",
-                label = strings.tier_label
-            )
-        };
+        let label = escape_value(&translator.game_tier(tier)?);
+        let original = escape_value(original);
+        let value = format!("{original}({label})${active}_techtree$");
         lines.push(format!(" {active}_desc:0 \"{value}\""));
     }
 
-    lines.join("\n")
+    Ok(lines.join("\n"))
 }
 
 fn active_id_of<'a>(id: &'a Id, display_ids: &'a HashMap<Id, Id>) -> &'a str {
@@ -142,7 +162,9 @@ fn write_yml(path: &Path, body: &str, outcome: &mut WriteOutcome) {
     bytes.extend_from_slice(body.as_bytes());
     match write_bytes(path, &bytes) {
         Ok(()) => outcome.written.push(path.to_string_lossy().into_owned()),
-        Err(e) => outcome.failed.push(format!("{}: {e}", path.display())),
+        Err(e) => outcome
+            .failed
+            .push(WriteFailure::new(path, WriteOperation::Write, e)),
     }
 }
 
@@ -157,12 +179,51 @@ fn write_bytes(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
 }
 
 fn cleanup_stale_language_files(input: &WriteRequest<'_>, outcome: &mut WriteOutcome) {
-    for language in SupportedLanguage::ALL {
-        if input.languages.contains(&language) {
+    let root = input.output_root_dir.join(LOCALISATION_DIR_NAME);
+    let entries = match fs::read_dir(&root) {
+        Ok(entries) => entries,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return,
+        Err(error) => {
+            outcome
+                .failed
+                .push(WriteFailure::new(&root, WriteOperation::Remove, error));
+            return;
+        }
+    };
+    // Ownership is determined by the generated filenames, independent of supported languages.
+    let mut directories = Vec::new();
+    for entry in entries {
+        match entry {
+            Ok(entry) => match entry.file_type() {
+                Ok(kind) if kind.is_dir() => directories.push(entry),
+                Ok(_) => {}
+                Err(error) => outcome.failed.push(WriteFailure::new(
+                    &entry.path(),
+                    WriteOperation::Remove,
+                    error,
+                )),
+            },
+            Err(error) => {
+                outcome
+                    .failed
+                    .push(WriteFailure::new(&root, WriteOperation::Remove, error))
+            }
+        }
+    }
+    directories.sort_by_key(|entry| entry.file_name());
+    for entry in directories {
+        let name = entry.file_name();
+        let Some(lang) = name.to_str() else {
+            continue;
+        };
+        if input
+            .languages
+            .iter()
+            .any(|language| language.code() == lang)
+        {
             continue;
         }
-        let lang = language.code();
-        let language_dir = input.output_root_dir.join(LOCALISATION_DIR_NAME).join(lang);
+        let language_dir = entry.path();
         let owned_paths = [
             language_dir.join(MAIN_LOC_TEMPLATE.replace("{lang}", lang)),
             language_dir
@@ -173,8 +234,37 @@ fn cleanup_stale_language_files(input: &WriteRequest<'_>, outcome: &mut WriteOut
             match fs::remove_file(&path) {
                 Ok(()) => outcome.removed.push(path.to_string_lossy().into_owned()),
                 Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-                Err(error) => outcome.failed.push(format!("{}: {error}", path.display())),
+                Err(error) => {
+                    outcome
+                        .failed
+                        .push(WriteFailure::new(&path, WriteOperation::Remove, error))
+                }
             }
         }
     }
+}
+
+// Clausewitz input already contains escaped sequences. Preserve each existing escape once.
+fn escape_value(value: &str) -> String {
+    let mut output = String::with_capacity(value.len());
+    let mut chars = value.chars().peekable();
+    while let Some(ch) = chars.next() {
+        match ch {
+            '\\' => {
+                output.push('\\');
+                if matches!(chars.peek(), Some('n' | 'r' | 't' | '"' | '\\')) {
+                    if let Some(next) = chars.next() {
+                        output.push(next);
+                    }
+                } else {
+                    output.push('\\');
+                }
+            }
+            '"' => output.push_str("\\\""),
+            '\n' => output.push_str("\\n"),
+            '\r' => {}
+            _ => output.push(ch),
+        }
+    }
+    output
 }
