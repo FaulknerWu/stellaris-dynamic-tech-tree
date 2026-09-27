@@ -1,7 +1,5 @@
 # 前端 UI 基线与依赖说明
 
-本文档只描述技术选型与依赖。页面结构、交互规则与视觉规范见 [`docs/frontend-design.md`](frontend-design.md)。
-
 ## 1. 技术选型
 
 - 组件基线：shadcn/ui；

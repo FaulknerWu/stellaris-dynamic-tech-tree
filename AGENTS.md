@@ -23,8 +23,6 @@
 - `pnpm i18n:check`：检查翻译契约、资源类型和静态文案。
 - `pnpm desktop:test` / `pnpm desktop:build`：前端行为测试及类型检查构建。
 
-翻译维护流程见 `docs/i18n-translating.md`。不保留旧设置迁移、旧 DTO 文案字段或语言兼容别名。
-
 ## 编码风格与命名约定
 
 Rust 使用 2024 edition、`rust-version = "1.98"`，保持 `rustfmt` 默认格式；模块、函数与变量用 `snake_case`，类型与枚举用 `PascalCase`。所有 crate 均应禁用 unsafe，新增代码不得引入 unsafe。注释应解释设计原因或业务约束，不重复代码表面行为。
