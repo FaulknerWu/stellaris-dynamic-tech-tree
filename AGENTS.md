@@ -2,16 +2,16 @@
 
 ## 项目结构与模块组织
 
-本仓库包含 Rust workspace 与 React/Tauri 桌面端。业务依赖方向为 `{ dtt-cli, dtt-desktop } → dtt-application → { dtt-core, dtt-stellaris }` 以及 `dtt-stellaris → dtt-core`。`dtt-i18n` 是叶子 crate，可供 CLI、应用报告和 Stellaris 输出适配器依赖；`dtt-core` 不依赖翻译运行时。
+本仓库包含 Rust workspace 与 React/Tauri 桌面端。业务依赖方向为 `{ dtt-cli, dtt-desktop } → dtt-application → { dtt-core, dtt-stellaris }` 以及 `dtt-stellaris → dtt-core`。`dtt-i18n` 是叶子 crate，可供 CLI、应用报告和 Stellaris 输出适配器依赖；翻译运行时由外围模块使用。
 
-- `crates/dtt-core`：纯领域模型与算法（帝国快照、条件 AST 与求值、科技资格、依赖图、ASCII 渲染）。不包含文件、路径、ZIP、SQLite 或 Jomini。
+- `crates/dtt-core`：纯领域模型与算法（帝国快照、条件 AST 与求值、科技资格、依赖图、ASCII 渲染）。文件、路径、ZIP、SQLite 和 Jomini 由适配层处理。
 - `crates/dtt-stellaris`：Stellaris 适配层（Clausewitz、存档、加载顺序、游戏数据、本地化、输出与路径发现）。
 - `crates/dtt-application`：共享应用入口（生成编排、进度、取消、环境检测与存档检查）。
 - `apps/dtt-cli`：命令行入口 `dtt`，业务调用仅使用应用层公共 API。
 - `apps/dtt-desktop`：React 前端和 Tauri IPC 边界，业务调用仅使用应用层公共 API。
-- `crates/dtt-i18n`：产品语言注册表、协商与内嵌 Fluent 资源；不依赖业务 crate。
+- `crates/dtt-i18n`：产品语言注册表、协商与内嵌 Fluent 资源；作为独立叶子 crate 提供翻译能力。
 
-核心库应保持与具体交互层解耦。文档放在 `docs`，构建产物 `target` 不应手动编辑。
+核心库应保持与具体交互层解耦。文档放在 `docs`，构建产物 `target` 由构建工具生成和维护。
 
 ## 构建、测试与开发命令
 
@@ -25,7 +25,7 @@
 
 ## 编码风格与命名约定
 
-Rust 使用 2024 edition、`rust-version = "1.98"`，保持 `rustfmt` 默认格式；模块、函数与变量用 `snake_case`，类型与枚举用 `PascalCase`。所有 crate 均应禁用 unsafe，新增代码不得引入 unsafe。注释应解释设计原因或业务约束，不重复代码表面行为。
+Rust 使用 2024 edition、`rust-version = "1.98"`，保持 `rustfmt` 默认格式；模块、函数与变量用 `snake_case`，类型与枚举用 `PascalCase`。所有 crate 均使用 `#![forbid(unsafe_code)]`，新增代码采用安全 Rust。注释用于解释设计原因或业务约束。
 
 ## 测试规范
 
@@ -37,4 +37,4 @@ Rust 使用 2024 edition、`rust-version = "1.98"`，保持 `rustfmt` 默认格�
 
 ## 配置与安全提示
 
-不要提交本地游戏路径、用户存档、临时生成 MOD、启动器数据库或平台私有配置。新增日志与诊断信息时不得泄露用户目录中的敏感数据。
+本地游戏路径、用户存档、临时生成 MOD、启动器数据库和平台私有配置仅保留在本地。提交前检查文件内容，日志与诊断信息中的敏感数据须先脱敏。

@@ -1,81 +1,106 @@
-# 前端 UI 基线与依赖说明
+# 前端开发说明
 
-## 1. 技术选型
+## 技术选型与组件规范
 
-- 组件基线：shadcn/ui；
-- 组件原语：Base UI；
-- 图标库：Lucide；
-- 样式引擎：Tailwind CSS 4；
+桌面端采用 React 19、TypeScript、Vite 和 Tauri 2。界面组件以 shadcn/ui 为基础，使用 Base UI 交互原语、Tailwind CSS 4 样式和 Lucide 图标。
 
-### 1.1 开发约束
+新增通用组件时，从仓库根目录执行 `pnpm --filter dtt-desktop exec shadcn add <组件名>`，再按产品需要修改生成的本地源码。业务组件统一组合 `src/components/ui` 中的组件，图标统一使用 Lucide。仓库只保留产品实际使用的组件源码；`components.json` 用于配置生成规则，已安装组件以源码目录为准。
 
-- 新增通用 UI 组件时，必须先从仓库根目录执行 `pnpm --filter dtt-desktop exec shadcn add <组件名>`，再按产品需要修改生成的本地源码。
-- 不得引入其他成套组件库，也不得复制其他组件库的组件作为并行基线。业务组件应组合 `src/components/ui` 中的 shadcn/ui 组件。
-- `components.json` 只描述生成规则，不代表组件已经安装。未被产品使用的组件源码不应保留。
-- 图标统一使用 Lucide，避免引入视觉语言不一致的并行图标集。
+## 目录与配置
 
-## 2. shadcn/ui 基础设施
+以下路径均相对于 `apps/dtt-desktop`。
 
-| 文件 | 作用 |
+| 路径 | 作用 |
 | --- | --- |
-| `apps/dtt-desktop/components.json` | 固定 Base UI、Nova、Lucide、CSS 变量、组件目录和导入别名等生成规则。 |
-| `apps/dtt-desktop/src/index.css` | 引入 Tailwind CSS、shadcn 主题工具、动画工具与 Geist 字体，并定义亮色、暗色设计令牌及全局基础样式。 |
-| `apps/dtt-desktop/src/lib/utils.ts` | 提供 shadcn/ui 组件统一使用的 `cn` 类名合并函数。 |
-| `apps/dtt-desktop/tsconfig.json` | 为 TypeScript 声明 `@/*` 到 `src/*` 的路径映射。 |
-| `apps/dtt-desktop/vite.config.ts` | 为 Vite 声明相同的运行时路径别名，并接入 Tailwind CSS 插件。 |
+| `components.json` | 配置 Base UI、Nova 样式、Lucide、CSS 变量和导入别名。 |
+| `src/index.css` | 引入 Tailwind、shadcn 主题工具、动画和 Geist 字体，定义亮色、暗色主题及全局样式。 |
+| `src/lib/utils.ts` | 提供统一的 `cn` 类名合并函数。 |
+| `tsconfig.json`、`vite.config.ts` | 配置 `@/*` 到 `src/*` 的别名、类型检查和构建；Vite 同时接入 Tailwind 插件。 |
+| `src/app` | 应用入口、页面布局、会话状态、主题和设置持久化。 |
+| `src/features` | 设置、存档与帝国、生成、结果四个页面。 |
+| `src/components` | 页面共用组件及 `ui` 基础组件。 |
+| `src/ipc/commands.ts`、`src/ipc/errors.ts` | 封装 Tauri 命令、进度通道和错误归一化。 |
+| `src/ipc/bindings` | 从 Rust DTO 导出的 TypeScript 类型。 |
+| `src/i18n` | 翻译资源、语言协商、状态控制、格式器和相关测试。 |
+| `src-tauri/src` | Rust 命令、DTO、错误转换和生成任务状态。 |
 
-## 3. 运行时直接依赖
+## 页面状态与 IPC
 
-以下清单对应 `apps/dtt-desktop/package.json` 的 `dependencies`。shadcn CLI 后续添加不同组件时，可能按组件源码的实际需要增加依赖；新增项必须同步补充到本文档。
+`src/app/session.ts` 管理设置、存档扫描、帝国检查和生成结果。环境解析、存档扫描和检查请求通过序号识别最新响应。生成状态涵盖空闲、执行、取消中、完成、已取消和失败。
 
-| 依赖 | 作用 |
+`src/ipc/commands.ts` 封装七个命令：`get_bootstrap_data`、`resolve_environment`、`scan_save_library`、`inspect_save`、`run_generation`、`cancel_generation`、`open_output_directory`。生成进度由 Tauri `Channel` 传递。Rust 侧通过应用层完成业务操作，同一时刻仅运行一个生成任务；取消在生成阶段切换时生效。
+
+Rust DTO 是 IPC 类型的维护入口。修改 DTO 后，在仓库根目录运行 `pnpm bindings` 更新 `src/ipc/bindings`。
+
+## 设置、语言与初始化
+
+`src/app/store.ts` 将桌面设置保存到 `dtt-desktop.json` 的 `preferences` 项；浏览器预览使用同名 localStorage 项。当前设置版本为 `schemaVersion: 2`，其他版本回退到默认设置。路径覆盖、输出语言、分析策略、界面语言、主题和存档来源均经过字段校验后保存，写入请求按顺序执行。
+
+默认设置使用英语游戏输出、`include_flagged` 未知策略、`keep_base` 变体策略、本地存档来源，以及跟随系统的界面语言和主题。
+
+`src/main.tsx` 先读取并校验设置，再调用 `bootstrapLocale` 初始化翻译、设置文档语言和窗口标题，随后尝试保存校验结果并挂载 React。保存失败状态会传给应用界面。
+
+界面使用 i18next / react-i18next 的 selector API 和生成的资源字面量类型。`src/i18n/controller.ts` 集中维护 `system | en | zh-Hans` 偏好、实际语言和保存失败状态，同时响应系统语言变化。界面语言与游戏输出语言分别保存和选择。
+
+`Intl` 格式器按显式 locale 和 options 缓存。错误与诊断以结构化数据保存在界面状态中，切换语言时直接重新翻译现有数据。磁盘报告采用任务创建时选定的产品语言。
+
+翻译资源位于 `src/i18n/locales/en` 和 `src/i18n/locales/zh-Hans`。修改资源后，运行 `pnpm i18n:generate` 更新类型，再运行 `pnpm i18n:check` 检查双语键、参数、复数、空值、重复键、闲置键和硬编码标签。
+
+## 运行时直接依赖
+
+下表对应 `package.json` 的 `dependencies`。添加组件或调整依赖时，同步维护用途说明。
+
+| 依赖 | 用途 |
 | --- | --- |
-| `@base-ui/react` | 提供 shadcn/ui 组件所需的无样式无障碍交互原语（Base UI）。 |
-| `@fontsource-variable/geist` | 在应用包内提供 Nova 预设使用的 Geist 可变字体，避免依赖远程字体服务。 |
-| `@fontsource-variable/geist-mono` | 在应用包内提供 Nova 预设使用的 Geist Mono 可变等宽字体，用于路径、游戏 ID 与诊断展示。 |
-| `@tauri-apps/api` | 提供 Tauri WebView 前端访问窗口、事件和应用能力的 JavaScript API。 |
-| `@tauri-apps/plugin-dialog` | 调用 Tauri 原生文件选择、保存和消息对话框。 |
-| `@tauri-apps/plugin-store` | 在桌面端持久化轻量键值配置。 |
-| `class-variance-authority` | 提供类型安全且可组合的组件变体样式变体管理（cva）。 |
-| `clsx` | 按条件组合 CSS 类名，是 `cn` 工具的输入归一化层。 |
-| `i18next` | 国际化核心，负责资源、语言切换、插值和翻译解析。 |
-| `lucide-react` | 提供 shadcn/ui 配置指定的 React 图标组件。 |
-| `react` | 前端组件与状态模型的运行时。 |
-| `react-dom` | 将 React 组件树挂载到 WebView DOM。 |
-| `react-i18next` | 将 i18next 接入 React，提供 Hook、组件更新和上下文集成。 |
-| `shadcn` | 提供组件 CLI，并通过 `shadcn/tailwind.css` 提供当前 shadcn/ui 所需的 Tailwind 主题工具和状态变体。 |
-| `tailwind-merge` | 按 Tailwind 规则消解冲突的工具类，是 `cn` 工具的冲突处理层。 |
-| `tw-animate-css` | 提供 shadcn/ui 组件状态切换所需的 Tailwind 动画工具类。 |
+| `@base-ui/react` | 提供组件交互和无障碍基础能力。 |
+| `@fontsource-variable/geist` | 随应用提供 Geist 可变字体。 |
+| `@fontsource-variable/geist-mono` | 随应用提供等宽字体，用于路径、游戏 ID 和诊断。 |
+| `@tauri-apps/api` | 访问 Tauri 窗口、IPC 和应用能力。 |
+| `@tauri-apps/plugin-dialog` | 调用原生文件和目录选择对话框。 |
+| `@tauri-apps/plugin-store` | 持久化桌面设置。 |
+| `class-variance-authority` | 管理组件样式变体。 |
+| `clsx` | 按条件组合 CSS 类名。 |
+| `i18next` | 管理翻译资源、语言切换和插值。 |
+| `lucide-react` | 提供统一的 React 图标组件。 |
+| `react` | 提供组件和状态模型。 |
+| `react-dom` | 将 React 组件挂载到 WebView DOM。 |
+| `react-i18next` | 将翻译能力接入 React，并随语言变化更新组件。 |
+| `shadcn` | 提供组件 CLI，以及 `shadcn/tailwind.css` 中的主题工具和状态变体。 |
+| `tailwind-merge` | 合并 Tailwind 类名并处理样式冲突。 |
+| `tw-animate-css` | 提供组件状态切换动画。 |
 
-## 4. 开发与构建直接依赖
+## 开发与构建直接依赖
 
-以下清单对应 `apps/dtt-desktop/package.json` 的 `devDependencies`。
+下表对应 `package.json` 的 `devDependencies`。
 
-| 依赖 | 作用 |
+| 依赖 | 用途 |
 | --- | --- |
-| `@tailwindcss/vite` | 在 Vite 开发与生产构建中扫描源码并编译 Tailwind CSS 4。 |
-| `@tauri-apps/cli` | 启动、构建和打包 Tauri 桌面应用。 |
-| `@types/node` | 为 Vite 配置中使用的 Node.js API 和环境变量提供 TypeScript 类型。 |
-| `@types/react` | 提供 React 的 TypeScript 类型声明。 |
-| `@types/react-dom` | 提供 React DOM 的 TypeScript 类型声明。 |
-| `@vitejs/plugin-react` | 将 React Fast Refresh 与 JSX 转换接入 Vite。 |
-| `tailwindcss` | 解析工具类、设计令牌和样式指令，生成 shadcn/ui 最终使用的 CSS。 |
-| `typescript` | 对前端源码执行静态类型检查；项目构建时不由 TypeScript 输出文件。 |
-| `vite` | 提供前端开发服务器和生产资源构建。 |
+| `@tailwindcss/vite` | 扫描源码并编译 Tailwind CSS。 |
+| `@tauri-apps/cli` | 启动、构建和打包桌面应用。 |
+| `@types/node` | 提供 Node.js API 类型。 |
+| `@types/react` | 提供 React 类型。 |
+| `@types/react-dom` | 提供 React DOM 类型。 |
+| `@vitejs/plugin-react` | 接入 React Fast Refresh 和 JSX 转换。 |
+| `jsonc-parser` | 在翻译检查中解析 JSON 并检查重复键。 |
+| `tailwindcss` | 编译工具类、主题变量和样式指令。 |
+| `typescript` | 执行静态类型检查，产物构建交给 Vite。 |
+| `vite` | 提供开发服务器和生产资源构建。 |
+| `vitest` | 运行前端测试。 |
 
-## 5. 权威资料
+## 常用命令
 
-- [shadcn/ui 简介](https://ui.shadcn.com/docs)
-- [shadcn/ui 的 Vite 安装说明](https://ui.shadcn.com/docs/installation/vite)
-- [Tailwind CSS 的 Vite 安装说明](https://tailwindcss.com/docs/installation/using-vite)
-- [Base UI 快速开始](https://base-ui.com/react/overview/quick-start)
-- [Tauri JavaScript API](https://tauri.app/reference/javascript/api/)
+仓库通过根目录 `package.json` 固定 pnpm 版本。以下命令均从仓库根目录执行。
 
+| 命令 | 用途 |
+| --- | --- |
+| `pnpm install` | 安装 workspace 的前端依赖。 |
+| `pnpm desktop:dev` | 启动 Tauri 开发应用及前端开发服务器。 |
+| `pnpm --filter dtt-desktop dev` | 启动 Vite，用于浏览器预览界面。 |
+| `pnpm desktop:build` | 运行 `tsc --noEmit` 并构建前端资源。 |
+| `pnpm desktop:tauri build` | 构建和打包 Tauri 桌面应用。 |
+| `pnpm bindings` | 从 Rust DTO 重新导出 TypeScript 类型。 |
+| `pnpm i18n:generate` | 更新翻译资源类型。 |
+| `pnpm i18n:check` | 执行翻译资源和文案检查。 |
+| `pnpm desktop:test` | 运行 Vitest 测试。 |
 
-## 国际化与初始化
-
-界面使用 i18next / react-i18next 的 selector API 和生成的资源字面量类型。`main.tsx` 先校验当前设置、协商语言并等待 `initializeI18n`，再挂载 React。`i18n/controller.ts` 是语言状态唯一所有者，维护 `system | en | zh-Hans` 偏好、解析语言、HTML/窗口标题和保存失败状态。
-
-`Intl` 格式器按显式 locale 与 options 缓存。IPC 诊断保留结构化数据，切换语言时重绘，不重新请求业务任务。界面语言与游戏输出选择互不修改；游戏输出默认英语。
-
-`pnpm i18n:generate` 更新资源类型；`pnpm i18n:check` 检查双语 key、参数、复数、空值、重复键、未使用 key 与硬编码标签；`pnpm desktop:test` 验证语言生命周期和错误重绘；`pnpm desktop:build` 包含严格 TypeScript 检查。翻译流程见 [翻译贡献说明](i18n-translating.md)。
+当前前端测试主要覆盖语言初始化、并发切换、保存失败、设置校验、格式化，以及错误和诊断的重新翻译。系统流程与 Rust 验证命令见 [系统架构](architecture.md)。
