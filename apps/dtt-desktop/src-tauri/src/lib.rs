@@ -28,5 +28,5 @@ pub fn run() {
             commands::system::open_output_directory,
         ])
         .run(tauri::generate_context!())
-        .expect("DTT 桌面应用启动失败");
+        .expect("DTT desktop startup failed");
 }

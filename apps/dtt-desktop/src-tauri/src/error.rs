@@ -6,7 +6,12 @@ use crate::dto::ErrorContextDto;
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ErrorCode {
-    InvalidEnvironment,
+    MissingSetting,
+    InvalidPath,
+    NoOutputLanguage,
+    ExecutablePathUnavailable,
+    NoTechnologyDefinitions,
+
     SaveUnavailable,
     SaveContainerCorrupt,
     UnsupportedBinarySave,
@@ -22,35 +27,31 @@ pub enum ErrorCode {
 #[serde(rename_all = "camelCase")]
 pub struct AppError {
     pub code: ErrorCode,
-    pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
-    pub detail: Option<String>,
+    pub technical_detail: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub context: Option<ErrorContextDto>,
 }
 
 impl AppError {
     pub fn generation_busy() -> Self {
-        Self::new(ErrorCode::GenerationBusy, "已有生成任务正在运行", None)
+        Self::new(ErrorCode::GenerationBusy, None)
     }
 
     pub fn player_country_required() -> Self {
-        Self::new(
-            ErrorCode::PlayerCountryRequired,
-            "该存档包含多个玩家国家，请先选择一个国家",
-            None,
-        )
+        Self::new(ErrorCode::PlayerCountryRequired, None)
     }
 
     pub fn internal(detail: impl Into<String>) -> Self {
-        Self::new(ErrorCode::Internal, "发生内部错误", Some(detail.into()))
+        Self::new(ErrorCode::Internal, Some(detail.into()))
     }
 
-    fn new(code: ErrorCode, message: impl Into<String>, detail: Option<String>) -> Self {
+    fn new(code: ErrorCode, detail: Option<String>) -> Self {
         Self {
             code,
-            message: message.into(),
-            detail,
+            technical_detail: detail,
             context: None,
         }
     }
@@ -62,37 +63,43 @@ impl From<dtt_application::Error> for AppError {
 
         let detail = error.to_string();
         match error {
-            Error::Settings(_) => {
-                Self::new(ErrorCode::InvalidEnvironment, "环境配置无效", Some(detail))
+            Error::Settings(issue) => {
+                use dtt_application::SettingsIssue;
+                let (code, path) = match issue {
+                    SettingsIssue::Missing { .. } => (ErrorCode::MissingSetting, None),
+                    SettingsIssue::InvalidPath { path, .. } => (
+                        ErrorCode::InvalidPath,
+                        Some(path.to_string_lossy().into_owned()),
+                    ),
+                    SettingsIssue::NoOutputLanguage => (ErrorCode::NoOutputLanguage, None),
+                };
+                Self {
+                    code,
+                    technical_detail: Some(detail),
+                    context: path.map(|path| ErrorContextDto { path: Some(path) }),
+                }
             }
-            Error::Cancelled => Self::new(ErrorCode::GenerationCancelled, "生成任务已取消", None),
+            Error::NoTechnologyDefinitions => Self::new(ErrorCode::NoTechnologyDefinitions, None),
+            Error::ExecutablePath(_) | Error::ExecutableParentMissing => {
+                Self::new(ErrorCode::ExecutablePathUnavailable, Some(detail))
+            }
+            Error::Cancelled => Self::new(ErrorCode::GenerationCancelled, None),
             Error::SaveUnavailable(path) => Self {
                 code: ErrorCode::SaveUnavailable,
-                message: "存档不存在或不可访问".into(),
-                detail: Some(detail),
+                technical_detail: Some(detail),
                 context: Some(ErrorContextDto {
                     path: Some(path.to_string_lossy().into_owned()),
                 }),
             },
-            Error::UnsupportedBinarySave => Self::new(
-                ErrorCode::UnsupportedBinarySave,
-                "不支持二进制或铁人存档",
-                None,
-            ),
-            Error::PlayerCountryMissing => {
-                Self::new(ErrorCode::PlayerCountryMissing, "存档中没有玩家国家", None)
-            }
+            Error::UnsupportedBinarySave => Self::new(ErrorCode::UnsupportedBinarySave, None),
+            Error::PlayerCountryMissing => Self::new(ErrorCode::PlayerCountryMissing, None),
             Error::PlayerCountryRequired => Self::player_country_required(),
-            Error::Stellaris(dtt_application::StellarisError::Container(_)) => Self::new(
-                ErrorCode::SaveContainerCorrupt,
-                "存档容器损坏",
-                Some(detail),
-            ),
-            Error::Stellaris(dtt_application::StellarisError::LauncherDb { .. }) => Self::new(
-                ErrorCode::LauncherDatabaseUnavailable,
-                "启动器数据库不可访问",
-                Some(detail),
-            ),
+            Error::Stellaris(dtt_application::StellarisError::Container(_)) => {
+                Self::new(ErrorCode::SaveContainerCorrupt, Some(detail))
+            }
+            Error::Stellaris(dtt_application::StellarisError::LauncherDb { .. }) => {
+                Self::new(ErrorCode::LauncherDatabaseUnavailable, Some(detail))
+            }
             _ => Self::internal(detail),
         }
     }

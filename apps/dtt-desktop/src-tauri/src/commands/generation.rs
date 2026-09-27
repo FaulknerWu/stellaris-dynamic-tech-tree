@@ -42,7 +42,7 @@ pub async fn run_generation(
         let mut active_generation = state
             .active_generation
             .lock()
-            .map_err(|_| AppError::internal("生成任务状态锁已损坏"))?;
+            .map_err(|_| AppError::internal("generation state lock poisoned"))?;
         if active_generation.is_some() {
             return Err(AppError::generation_busy());
         }
@@ -68,6 +68,9 @@ pub async fn run_generation(
             country_id: request.country_id,
         },
         settings: request.settings.into(),
+        presentation: dtt_application::Presentation {
+            report_locale: request.report_locale.into(),
+        },
         render_limits: Default::default(),
         progress: Some(progress_callback),
         cancellation: cancellation_token,
@@ -87,7 +90,7 @@ pub fn cancel_generation(state: tauri::State<'_, DesktopState>) -> Result<bool, 
     let active_generation = state
         .active_generation
         .lock()
-        .map_err(|_| AppError::internal("生成任务状态锁已损坏"))?;
+        .map_err(|_| AppError::internal("generation state lock poisoned"))?;
     let Some(active_generation) = active_generation.as_ref() else {
         return Ok(false);
     };

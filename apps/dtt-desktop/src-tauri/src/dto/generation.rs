@@ -3,50 +3,42 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
-#[serde(rename_all = "snake_case")]
-pub enum SupportedLanguageDto {
-    English,
-    SimpChinese,
-    French,
-    German,
-    Spanish,
-    Russian,
-    Korean,
-    Japanese,
-    Polish,
-    BrazPor,
+pub enum AppLocaleDto {
+    #[serde(rename = "en")]
+    En,
+    #[serde(rename = "zh-Hans")]
+    ZhHans,
 }
-
-impl From<SupportedLanguageDto> for application::SupportedLanguage {
-    fn from(value: SupportedLanguageDto) -> Self {
+impl From<AppLocaleDto> for application::AppLocale {
+    fn from(value: AppLocaleDto) -> Self {
         match value {
-            SupportedLanguageDto::English => Self::English,
-            SupportedLanguageDto::SimpChinese => Self::SimpChinese,
-            SupportedLanguageDto::French => Self::French,
-            SupportedLanguageDto::German => Self::German,
-            SupportedLanguageDto::Spanish => Self::Spanish,
-            SupportedLanguageDto::Russian => Self::Russian,
-            SupportedLanguageDto::Korean => Self::Korean,
-            SupportedLanguageDto::Japanese => Self::Japanese,
-            SupportedLanguageDto::Polish => Self::Polish,
-            SupportedLanguageDto::BrazPor => Self::BrazPor,
+            AppLocaleDto::En => Self::En,
+            AppLocaleDto::ZhHans => Self::ZhHans,
         }
     }
 }
 
-impl From<application::SupportedLanguage> for SupportedLanguageDto {
-    fn from(value: application::SupportedLanguage) -> Self {
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case")]
+pub enum GameLanguageDto {
+    English,
+    SimpChinese,
+}
+
+impl From<GameLanguageDto> for application::GameLanguage {
+    fn from(value: GameLanguageDto) -> Self {
         match value {
-            application::SupportedLanguage::English => Self::English,
-            application::SupportedLanguage::SimpChinese => Self::SimpChinese,
-            application::SupportedLanguage::French => Self::French,
-            application::SupportedLanguage::German => Self::German,
-            application::SupportedLanguage::Spanish => Self::Spanish,
-            application::SupportedLanguage::Russian => Self::Russian,
-            application::SupportedLanguage::Korean => Self::Korean,
-            application::SupportedLanguage::Japanese => Self::Japanese,
-            application::SupportedLanguage::Polish => Self::Polish,
-            application::SupportedLanguage::BrazPor => Self::BrazPor,
+            GameLanguageDto::English => Self::English,
+            GameLanguageDto::SimpChinese => Self::SimpChinese,
+        }
+    }
+}
+
+impl From<application::GameLanguage> for GameLanguageDto {
+    fn from(value: application::GameLanguage) -> Self {
+        match value {
+            application::GameLanguage::English => Self::English,
+            application::GameLanguage::SimpChinese => Self::SimpChinese,
         }
     }
 }
@@ -90,7 +82,7 @@ impl From<SwapUnknownStrategyDto> for application::SwapUnknownStrategy {
 pub struct GenerationSettingsDto {
     pub stellaris_root: String,
     pub launcher_db: String,
-    pub languages: Vec<SupportedLanguageDto>,
+    pub languages: Vec<GameLanguageDto>,
     pub unknown_strategy: UnknownStrategyDto,
     pub swap_unknown_strategy: SwapUnknownStrategyDto,
 }
@@ -111,6 +103,7 @@ impl From<GenerationSettingsDto> for application::GenerationSettings {
 #[serde(rename_all = "camelCase")]
 pub struct GenerationRequestDto {
     pub save_file: String,
+    pub report_locale: AppLocaleDto,
     #[ts(optional)]
     pub country_id: Option<i64>,
     pub settings: GenerationSettingsDto,
@@ -174,7 +167,7 @@ pub struct GenerationResultDto {
     pub swap_uncertain: usize,
     pub written: Vec<String>,
     pub removed: Vec<String>,
-    pub failed: Vec<String>,
+    pub failed: Vec<GenerationDiagnosticItemDto>,
     #[ts(optional)]
     pub report_path: Option<String>,
     pub diagnostics: GenerationDiagnosticsDto,
@@ -194,162 +187,343 @@ pub struct GenerationDiagnosticsDto {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-pub struct GenerationDiagnosticItemDto {
-    pub summary: String,
-    #[ts(optional)]
-    pub detail: Option<String>,
+#[serde(
+    tag = "kind",
+    rename_all = "snake_case",
+    rename_all_fields = "camelCase"
+)]
+pub enum GenerationDiagnosticItemDto {
+    MissingModDescriptor {
+        mod_name: String,
+    },
+    UnknownCondition {
+        reason: UnknownConditionDto,
+        name: String,
+        occurrences: usize,
+        technologies: Vec<String>,
+    },
+    DeferredCondition {
+        name: String,
+        occurrences: usize,
+        technologies: Vec<String>,
+    },
+    GameData {
+        source: String,
+        category: String,
+        diagnostic_kind: String,
+        subject: Option<String>,
+        byte_offset: Option<usize>,
+        issue: DefinitionIssueDto,
+        technical_detail: Option<String>,
+    },
+    UnhandledDefinition {
+        technology: String,
+        source: String,
+        fields: Vec<String>,
+    },
+    Localisation {
+        reason: LocalisationFailureKindDto,
+        language: String,
+        source: String,
+        path: String,
+        technical_detail: String,
+    },
+    SelfReference {
+        technology: String,
+    },
+    Cycle {
+        technologies: Vec<String>,
+    },
+    WriteFailed {
+        path: String,
+        operation: WriteOperationDto,
+        technical_detail: String,
+    },
 }
-
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case")]
+pub enum WriteOperationDto {
+    Write,
+    Remove,
+    Format,
+}
+impl From<&application::WriteFailure> for GenerationDiagnosticItemDto {
+    fn from(value: &application::WriteFailure) -> Self {
+        Self::WriteFailed {
+            path: value.path.clone(),
+            operation: match value.operation {
+                application::WriteOperation::Write => WriteOperationDto::Write,
+                application::WriteOperation::Remove => WriteOperationDto::Remove,
+                application::WriteOperation::Format => WriteOperationDto::Format,
+            },
+            technical_detail: value.technical_detail.clone(),
+        }
+    }
+}
 impl From<application::RunGenerationResult> for GenerationResultDto {
     fn from(value: application::RunGenerationResult) -> Self {
-        let status = match value.output.status {
-            application::GenerationStatus::Success => GenerationStatusDto::Success,
-            application::GenerationStatus::Incomplete => GenerationStatusDto::Incomplete,
+        use GenerationDiagnosticItemDto as D;
+        let report = &value.report;
+        let ids = |items: &[application::TechnologyId]| {
+            items.iter().map(ToString::to_string).collect::<Vec<_>>()
         };
-        let unknown_conditions = value
-            .report
-            .unknown_triggers
-            .iter()
-            .map(|diagnostic| GenerationDiagnosticItemDto {
-                summary: diagnostic.reason.trigger_name().to_string(),
-                detail: Some(format!(
-                    "{}；出现 {} 次；影响科技：{}",
-                    diagnostic.reason,
-                    diagnostic.occurrences,
-                    diagnostic
-                        .tech_ids
-                        .iter()
-                        .map(|technology_id| technology_id.as_str())
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )),
-            })
-            .collect();
-        let load_order = value
-            .report
-            .missing_mod_descriptors
-            .iter()
-            .map(|name| GenerationDiagnosticItemDto {
-                summary: format!("{name}：缺少 descriptor.mod"),
-                detail: Some(
-                    "已跳过描述文件读取并继续加载 MOD；未应用该文件中的 replace_path 规则。".into(),
-                ),
-            })
-            .collect();
-        let deferred_conditions = value
-            .report
-            .deferred_triggers
-            .iter()
-            .map(|diagnostic| GenerationDiagnosticItemDto {
-                summary: diagnostic.name.clone(),
-                detail: Some(format!(
-                    "出现 {} 次；影响科技：{}",
-                    diagnostic.occurrences,
-                    diagnostic
-                        .tech_ids
-                        .iter()
-                        .map(|technology_id| technology_id.as_str())
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )),
-            })
-            .collect();
-        let game_data = value
-            .report
-            .game_data_diagnostics
-            .iter()
-            .map(|diagnostic| GenerationDiagnosticItemDto {
-                summary: diagnostic
-                    .subject
-                    .clone()
-                    .unwrap_or_else(|| diagnostic.source.clone()),
-                detail: Some(
-                    format!(
-                        "{} · {} · {}{}",
-                        diagnostic.source,
-                        diagnostic.category.as_str(),
-                        diagnostic.kind.as_str(),
-                        diagnostic
-                            .byte_offset
-                            .map(|offset| format!(" · byte {offset}"))
-                            .unwrap_or_default()
-                    ) + &format!("\n{}", diagnostic.message),
-                ),
-            })
-            .collect();
-        let unhandled_definitions = value
-            .report
-            .unhandled_definition_fields
-            .iter()
-            .map(|diagnostic| GenerationDiagnosticItemDto {
-                summary: diagnostic.technology_id.as_str().to_string(),
-                detail: Some(format!(
-                    "{}\n{}",
-                    diagnostic.source,
-                    diagnostic.fields.join(", ")
-                )),
-            })
-            .collect();
-        let localisation = value
-            .report
-            .localisation_diagnostics
-            .iter()
-            .map(|diagnostic| GenerationDiagnosticItemDto {
-                summary: format!("{} · {}", diagnostic.language, diagnostic.source),
-                detail: Some(format!("{}\n{}", diagnostic.path, diagnostic.message)),
-            })
-            .collect();
-        let mut cycles = value
-            .report
+        let mut cycles = report
             .cycles_self_refs
             .iter()
-            .map(|technology_id| GenerationDiagnosticItemDto {
-                summary: technology_id.as_str().to_string(),
-                detail: None,
+            .map(|id| D::SelfReference {
+                technology: id.to_string(),
             })
             .collect::<Vec<_>>();
-        cycles.extend(value.report.cycles_complex.iter().map(|cycle| {
-            GenerationDiagnosticItemDto {
-                summary: cycle
-                    .iter()
-                    .map(|technology_id| technology_id.as_str())
-                    .collect::<Vec<_>>()
-                    .join(" → "),
-                detail: None,
-            }
+        cycles.extend(report.cycles_complex.iter().map(|items| D::Cycle {
+            technologies: ids(items),
         }));
-        let write_failures = value
-            .output
-            .failed
-            .iter()
-            .map(|failure| GenerationDiagnosticItemDto {
-                summary: failure.clone(),
-                detail: None,
-            })
-            .collect();
+        let failed = value.output.failed.iter().map(D::from).collect::<Vec<_>>();
         Self {
-            status,
+            status: match value.output.status {
+                application::GenerationStatus::Success => GenerationStatusDto::Success,
+                application::GenerationStatus::Incomplete => GenerationStatusDto::Incomplete,
+            },
             source_count: value.source_count,
             technology_count: value.technology_count,
-            eligible_count: value.report.eligible.len(),
-            swap_matched: value.report.swap_matched,
-            swap_no_match: value.report.swap_nomatch,
-            swap_uncertain: value.report.swap_uncertain,
+            eligible_count: report.eligible.len(),
+            swap_matched: report.swap_matched,
+            swap_no_match: report.swap_nomatch,
+            swap_uncertain: report.swap_uncertain,
             written: value.output.written,
             removed: value.output.removed,
-            failed: value.output.failed,
+            failed: failed.clone(),
             report_path: value.output.report_path,
             diagnostics: GenerationDiagnosticsDto {
-                load_order,
-                unknown_conditions,
-                deferred_conditions,
-                game_data,
-                unhandled_definitions,
-                localisation,
+                load_order: report
+                    .missing_mod_descriptors
+                    .iter()
+                    .map(|name| D::MissingModDescriptor {
+                        mod_name: name.clone(),
+                    })
+                    .collect(),
+                unknown_conditions: report
+                    .unknown_triggers
+                    .iter()
+                    .map(|d| D::UnknownCondition {
+                        reason: (&d.reason).into(),
+                        name: d.reason.trigger_name().into(),
+                        occurrences: d.occurrences,
+                        technologies: ids(&d.tech_ids),
+                    })
+                    .collect(),
+                deferred_conditions: report
+                    .deferred_triggers
+                    .iter()
+                    .map(|d| D::DeferredCondition {
+                        name: d.name.clone(),
+                        occurrences: d.occurrences,
+                        technologies: ids(&d.tech_ids),
+                    })
+                    .collect(),
+                game_data: report
+                    .game_data_diagnostics
+                    .iter()
+                    .map(|d| D::GameData {
+                        source: d.source.clone(),
+                        category: d.category.as_str().into(),
+                        diagnostic_kind: d.kind.as_str().into(),
+                        subject: d.subject.clone(),
+                        byte_offset: d.byte_offset,
+                        issue: (&d.issue).into(),
+                        technical_detail: d.technical_detail.clone(),
+                    })
+                    .collect(),
+                unhandled_definitions: report
+                    .unhandled_definition_fields
+                    .iter()
+                    .map(|d| D::UnhandledDefinition {
+                        technology: d.technology_id.to_string(),
+                        source: d.source.clone(),
+                        fields: d.fields.clone(),
+                    })
+                    .collect(),
+                localisation: report
+                    .localisation_diagnostics
+                    .iter()
+                    .map(|d| D::Localisation {
+                        reason: d.kind.into(),
+                        language: d.language.clone(),
+                        source: d.source.clone(),
+                        path: d.path.clone(),
+                        technical_detail: d.technical_detail.clone(),
+                    })
+                    .collect(),
                 cycles,
-                write_failures,
+                write_failures: failed,
             },
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum DefinitionIssueDto {
+    InvalidUtf8,
+    InvalidSyntax,
+    ExpectedScalar,
+    ExpectedObject,
+    InvalidField { field: String },
+    Overwritten { previous: Option<String> },
+    InlineCycle { script: String },
+    InlineMissing { script: String },
+    InvalidInlineCall,
+    IsolatedBranch,
+    InvalidCondition,
+    MalformedArgument,
+    StructuredArgument,
+    DuplicateParameter,
+    InvalidSwap { index: usize, field: String },
+    DuplicateField { field: String },
+    FieldCase { field: String, expected: String },
+}
+impl From<&application::DefinitionIssue> for DefinitionIssueDto {
+    fn from(issue: &application::DefinitionIssue) -> Self {
+        use application::DefinitionIssue as I;
+        match issue {
+            I::InvalidUtf8 => Self::InvalidUtf8,
+            I::InvalidSyntax => Self::InvalidSyntax,
+            I::ExpectedScalar => Self::ExpectedScalar,
+            I::ExpectedObject => Self::ExpectedObject,
+            I::InvalidField { field } => Self::InvalidField {
+                field: field.clone(),
+            },
+            I::Overwritten { previous } => Self::Overwritten {
+                previous: previous.clone(),
+            },
+            I::InlineCycle { script } => Self::InlineCycle {
+                script: script.clone(),
+            },
+            I::InlineMissing { script } => Self::InlineMissing {
+                script: script.clone(),
+            },
+            I::InvalidInlineCall => Self::InvalidInlineCall,
+            I::IsolatedBranch => Self::IsolatedBranch,
+            I::InvalidCondition => Self::InvalidCondition,
+            I::MalformedArgument => Self::MalformedArgument,
+            I::StructuredArgument => Self::StructuredArgument,
+            I::DuplicateParameter => Self::DuplicateParameter,
+            I::InvalidSwap { index, field } => Self::InvalidSwap {
+                index: *index,
+                field: field.clone(),
+            },
+            I::DuplicateField { field } => Self::DuplicateField {
+                field: field.clone(),
+            },
+            I::FieldCase { field, expected } => Self::FieldCase {
+                field: field.clone(),
+                expected: expected.clone(),
+            },
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(
+    tag = "kind",
+    rename_all = "snake_case",
+    rename_all_fields = "camelCase"
+)]
+pub enum UnknownConditionDto {
+    Trigger,
+    Operator {
+        operator: String,
+    },
+    MalformedArgument,
+    StructuredArgument {
+        keys: Vec<String>,
+    },
+    Context {
+        reason: ContextReasonDto,
+        scope_path: Vec<String>,
+        calls: Vec<String>,
+        expected: Option<String>,
+        actual: Option<String>,
+    },
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case")]
+pub enum ContextReasonDto {
+    MissingPreviousScope,
+    MissingEventSource,
+    MissingFounderSpecies,
+    UnknownSpeciesRelation,
+    UnknownOwner,
+    UnknownTrigger,
+    ExpectedScalar,
+    UnboundArgument,
+    InvalidBoolean,
+    MissingIdentity,
+    UnverifiedStructure,
+    UnknownScope,
+    UnknownCollection,
+    RecursiveScript,
+    TypeMismatch,
+}
+impl From<&application::UnknownConditionReason> for UnknownConditionDto {
+    fn from(value: &application::UnknownConditionReason) -> Self {
+        use application::{ContextReason as C, UnknownConditionReason as R};
+        match value {
+            R::Trigger(_) => Self::Trigger,
+            R::Operator { operator, .. } => Self::Operator {
+                operator: operator.symbol().into(),
+            },
+            R::MalformedArgument(_) => Self::MalformedArgument,
+            R::StructuredArgument { keys, .. } => Self::StructuredArgument { keys: keys.clone() },
+            R::Context {
+                reason,
+                scope_path,
+                calls,
+                ..
+            } => {
+                let (expected, actual) = if let C::TypeMismatch { expected, actual } = reason {
+                    (Some(expected.clone()), actual.clone())
+                } else {
+                    (None, None)
+                };
+                Self::Context {
+                    reason: match reason {
+                        C::MissingPreviousScope => ContextReasonDto::MissingPreviousScope,
+                        C::MissingEventSource => ContextReasonDto::MissingEventSource,
+                        C::MissingFounderSpecies => ContextReasonDto::MissingFounderSpecies,
+                        C::UnknownSpeciesRelation => ContextReasonDto::UnknownSpeciesRelation,
+                        C::UnknownOwner => ContextReasonDto::UnknownOwner,
+                        C::UnknownTrigger => ContextReasonDto::UnknownTrigger,
+                        C::ExpectedScalar => ContextReasonDto::ExpectedScalar,
+                        C::UnboundArgument => ContextReasonDto::UnboundArgument,
+                        C::InvalidBoolean => ContextReasonDto::InvalidBoolean,
+                        C::MissingIdentity => ContextReasonDto::MissingIdentity,
+                        C::UnverifiedStructure => ContextReasonDto::UnverifiedStructure,
+                        C::UnknownScope => ContextReasonDto::UnknownScope,
+                        C::UnknownCollection => ContextReasonDto::UnknownCollection,
+                        C::RecursiveScript => ContextReasonDto::RecursiveScript,
+                        C::TypeMismatch { .. } => ContextReasonDto::TypeMismatch,
+                    },
+                    scope_path: scope_path.clone(),
+                    calls: calls.clone(),
+                    expected,
+                    actual,
+                }
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case")]
+pub enum LocalisationFailureKindDto {
+    InvalidUtf8,
+    ReadFailed,
+}
+impl From<application::LocalisationFailureKind> for LocalisationFailureKindDto {
+    fn from(value: application::LocalisationFailureKind) -> Self {
+        match value {
+            application::LocalisationFailureKind::InvalidUtf8 => Self::InvalidUtf8,
+            application::LocalisationFailureKind::ReadFailed => Self::ReadFailed,
         }
     }
 }

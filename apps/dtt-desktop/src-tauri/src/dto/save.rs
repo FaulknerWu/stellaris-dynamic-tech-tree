@@ -38,6 +38,7 @@ pub struct InspectSaveRequestDto {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 pub struct SaveLibraryDto {
+    pub diagnostics: Vec<SaveScanDiagnosticDto>,
     pub accounts: Vec<SaveAccountDto>,
 }
 
@@ -65,7 +66,7 @@ pub struct SaveIndexDto {
     pub file_size: u64,
     pub state: SaveIndexStateDto,
     #[ts(optional)]
-    pub unavailable_reason: Option<String>,
+    pub unavailable_reason: Option<SaveUnavailableReasonDto>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
@@ -131,6 +132,7 @@ pub struct SpeciesDto {
 impl From<application::SaveLibrary> for SaveLibraryDto {
     fn from(value: application::SaveLibrary) -> Self {
         Self {
+            diagnostics: value.diagnostics.into_iter().map(Into::into).collect(),
             accounts: value.accounts.into_iter().map(Into::into).collect(),
         }
     }
@@ -166,7 +168,7 @@ impl From<application::SaveIndex> for SaveIndexDto {
                 application::SaveIndexState::Binary => SaveIndexStateDto::Binary,
                 application::SaveIndexState::Corrupt => SaveIndexStateDto::Corrupt,
             },
-            unavailable_reason: value.unavailable_reason,
+            unavailable_reason: value.unavailable_reason.map(Into::into),
         }
     }
 }
@@ -219,6 +221,63 @@ impl From<dtt_application::Snapshot> for SnapshotDto {
                     .unwrap_or_default(),
             },
             country_type: value.country_type.unwrap_or_default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(
+    tag = "kind",
+    rename_all = "snake_case",
+    rename_all_fields = "camelCase"
+)]
+pub enum SaveUnavailableReasonDto {
+    Binary,
+    Corrupt { technical_detail: String },
+}
+impl From<application::SaveUnavailableReason> for SaveUnavailableReasonDto {
+    fn from(value: application::SaveUnavailableReason) -> Self {
+        match value {
+            application::SaveUnavailableReason::Binary => Self::Binary,
+            application::SaveUnavailableReason::Corrupt { technical_detail } => {
+                Self::Corrupt { technical_detail }
+            }
+        }
+    }
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct SaveScanDiagnosticDto {
+    pub path: String,
+    pub kind: SaveScanFailureKindDto,
+    pub technical_detail: String,
+}
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case")]
+pub enum SaveScanFailureKindDto {
+    SteamUsers,
+    SteamUserEntry,
+    SaveRoot,
+    CampaignEntry,
+    Campaign,
+    SaveEntry,
+    FileMetadata,
+}
+impl From<application::SaveScanDiagnostic> for SaveScanDiagnosticDto {
+    fn from(value: application::SaveScanDiagnostic) -> Self {
+        use application::SaveScanFailureKind as K;
+        Self {
+            path: value.path.to_string_lossy().into_owned(),
+            technical_detail: value.technical_detail,
+            kind: match value.kind {
+                K::SteamUsers => SaveScanFailureKindDto::SteamUsers,
+                K::SteamUserEntry => SaveScanFailureKindDto::SteamUserEntry,
+                K::SaveRoot => SaveScanFailureKindDto::SaveRoot,
+                K::CampaignEntry => SaveScanFailureKindDto::CampaignEntry,
+                K::Campaign => SaveScanFailureKindDto::Campaign,
+                K::SaveEntry => SaveScanFailureKindDto::SaveEntry,
+                K::FileMetadata => SaveScanFailureKindDto::FileMetadata,
+            },
         }
     }
 }

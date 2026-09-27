@@ -9,10 +9,9 @@ use ts_rs::{Config, TS};
 
 pub use environment::{
     BootstrapDataDto, DetectedEnvironmentDto, EnvironmentDto, ResolveEnvironmentRequestDto,
-    SupportedLanguageDto,
 };
 pub use generation::{
-    GenerationDiagnosticItemDto, GenerationDiagnosticsDto, GenerationProgressDto,
+    GameLanguageDto, GenerationDiagnosticItemDto, GenerationDiagnosticsDto, GenerationProgressDto,
     GenerationRequestDto, GenerationResultDto, GenerationSettingsDto, GenerationStageDto,
     GenerationStatusDto, SwapUnknownStrategyDto, UnknownStrategyDto,
 };
@@ -25,6 +24,7 @@ pub use save::{
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 pub struct ErrorContextDto {
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub path: Option<String>,
 }
@@ -40,7 +40,7 @@ pub fn export_bindings() -> Result<(), Box<dyn std::error::Error>> {
     DetectedEnvironmentDto::export_all(&config)?;
     EnvironmentDto::export_all(&config)?;
     ResolveEnvironmentRequestDto::export_all(&config)?;
-    SupportedLanguageDto::export_all(&config)?;
+    GameLanguageDto::export_all(&config)?;
     GenerationProgressDto::export_all(&config)?;
     GenerationRequestDto::export_all(&config)?;
     GenerationResultDto::export_all(&config)?;

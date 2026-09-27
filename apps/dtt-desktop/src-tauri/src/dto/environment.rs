@@ -2,8 +2,6 @@ use dtt_application::{DetectedEnvironment, ResolveEnvironmentRequest, ResolvedEn
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-pub use super::generation::SupportedLanguageDto;
-
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 pub struct ResolveEnvironmentRequestDto {
