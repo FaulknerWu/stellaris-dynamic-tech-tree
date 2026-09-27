@@ -72,3 +72,12 @@
 - [Tailwind CSS 的 Vite 安装说明](https://tailwindcss.com/docs/installation/using-vite)
 - [Base UI 快速开始](https://base-ui.com/react/overview/quick-start)
 - [Tauri JavaScript API](https://tauri.app/reference/javascript/api/)
+
+
+## 国际化与初始化
+
+界面使用 i18next / react-i18next 的 selector API 和生成的资源字面量类型。`main.tsx` 先校验当前设置、协商语言并等待 `initializeI18n`，再挂载 React。`i18n/controller.ts` 是语言状态唯一所有者，维护 `system | en | zh-Hans` 偏好、解析语言、HTML/窗口标题和保存失败状态。
+
+`Intl` 格式器按显式 locale 与 options 缓存。IPC 诊断保留结构化数据，切换语言时重绘，不重新请求业务任务。界面语言与游戏输出选择互不修改；游戏输出默认英语。
+
+`pnpm i18n:generate` 更新资源类型；`pnpm i18n:check` 检查双语 key、参数、复数、空值、重复键、未使用 key 与硬编码标签；`pnpm desktop:test` 验证语言生命周期和错误重绘；`pnpm desktop:build` 包含严格 TypeScript 检查。翻译流程见 [翻译贡献说明](i18n-translating.md)。

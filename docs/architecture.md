@@ -400,3 +400,12 @@ project/
 - `dtt generate <SAVE>`：读取非铁人文本存档并生成本地化文件；可通过 `--stellaris-root`、`--documents-dir` 与 `--launcher-db` 覆盖自动发现结果。`--documents-dir` 只用于定位 `launcher-v2.sqlite`，不作为输出目录。
 
 输出语言通过可重复的 `--language <LANG>` 指定，默认 `english`。未知触发器与科技替换的处理策略分别由 `--unknown-strategy`（默认 `include-flagged`）和 `--swap-unknown-strategy`（默认 `keep-base`）控制。CLI 不暴露帝国 `country_id` 或渲染阈值覆盖。
+
+
+## 国际化边界
+
+`dtt-i18n` 是独立叶子 crate，提供 `AppLocale`、任务级 `Translator` 与类型化消息接口。CLI、应用层报告、Stellaris 输出适配器依赖它；纯领域层不依赖翻译。领域渲染返回 `RenderOutcome`，未知条件、摄取诊断、写出失败均传递枚举和参数。
+
+产品语言是 `en` / `zh-Hans`，游戏输出是 `GameLanguage::{English, SimpChinese}`，两者独立。`RunGenerationRequest.presentation.report_locale` 在创建任务时捕获；磁盘报告经 `render_report` 渲染，后续界面语言变更不重写报告。游戏文案只使用 game 域，不注入 Fluent bidi 隔离符。
+
+Tauri DTO 传递稳定错误码和带标签的诊断联合，技术细节单独展示。桌面设置仅接受当前 schema，不保留旧字段、旧语言枚举或迁移逻辑。维护规范见 [翻译贡献说明](i18n-translating.md)。
