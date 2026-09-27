@@ -1,0 +1,17 @@
+report-title = DTT generation report
+report-missing-mods = Missing MOD descriptors
+report-eligible = Eligible technologies
+report-uncertain = Uncertain eligibility
+report-excluded-identity = Excluded by identity
+report-excluded-prerequisite = Excluded by prerequisite closure
+report-unknown = Unknown conditions
+report-deferred = Deferred conditions (future possibilities retained)
+report-game-data = Game data diagnostics
+report-definitions = Unhandled definition fields
+report-localisation = Game localisation diagnostics
+report-self-cycles = Self references
+report-cycles = Dependency cycles
+report-swap-matched = Matched swaps
+report-swap-no-match = Unmatched swaps
+report-swap-uncertain = Uncertain swaps (base display retained)
+report-technical = Technical details

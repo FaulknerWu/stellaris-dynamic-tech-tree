@@ -1,0 +1,118 @@
+[
+  {
+    "candidates": [
+      "en-US"
+    ],
+    "expected": "en"
+  },
+  {
+    "candidates": [
+      "EN-gb"
+    ],
+    "expected": "en"
+  },
+  {
+    "candidates": [
+      "zh"
+    ],
+    "expected": "zh-Hans"
+  },
+  {
+    "candidates": [
+      "zh-CN"
+    ],
+    "expected": "zh-Hans"
+  },
+  {
+    "candidates": [
+      "zh-SG"
+    ],
+    "expected": "zh-Hans"
+  },
+  {
+    "candidates": [
+      "zh-Hans-HK"
+    ],
+    "expected": "zh-Hans"
+  },
+  {
+    "candidates": [
+      "zh-Hant"
+    ],
+    "expected": "en"
+  },
+  {
+    "candidates": [
+      "zh-TW"
+    ],
+    "expected": "en"
+  },
+  {
+    "candidates": [
+      "zh-HK"
+    ],
+    "expected": "en"
+  },
+  {
+    "candidates": [
+      "zh-MO"
+    ],
+    "expected": "en"
+  },
+  {
+    "candidates": [
+      "zh-Hant-CN"
+    ],
+    "expected": "en"
+  },
+  {
+    "candidates": [
+      "fr-FR",
+      "zh-SG"
+    ],
+    "expected": "zh-Hans"
+  },
+  {
+    "candidates": [
+      "bad_tag",
+      "zh-Hans"
+    ],
+    "expected": "zh-Hans"
+  },
+  {
+    "candidates": [],
+    "expected": "en"
+  },
+  {
+    "candidates": [
+      "fr-FR"
+    ],
+    "expected": "en"
+  },
+  {
+    "candidates": [
+      "zh-CN-u-nu-hanidec"
+    ],
+    "expected": "zh-Hans"
+  },
+  {
+    "candidates": [
+      "en-US-u-ca-gregory",
+      "zh-Hans"
+    ],
+    "expected": "en"
+  },
+  {
+    "candidates": [
+      "zh-Hans-x-dtt"
+    ],
+    "expected": "zh-Hans"
+  },
+  {
+    "candidates": [
+      "zh-CN-u",
+      "en"
+    ],
+    "expected": "en"
+  }
+]

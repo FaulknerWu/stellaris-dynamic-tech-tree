@@ -1,0 +1,17 @@
+report-title = DTT 生成报告
+report-missing-mods = 缺失 MOD 描述文件
+report-eligible = 可用科技
+report-uncertain = 资格不确定
+report-excluded-identity = 身份条件排除
+report-excluded-prerequisite = 前置条件闭包排除
+report-unknown = 未知条件
+report-deferred = 过程性条件（保留未来可能性）
+report-game-data = 游戏数据诊断
+report-definitions = 未处理的定义字段
+report-localisation = 游戏本地化诊断
+report-self-cycles = 自引用
+report-cycles = 依赖环
+report-swap-matched = 匹配的科技替换
+report-swap-no-match = 未匹配的科技替换
+report-swap-uncertain = 不确定的科技替换（保留基础显示）
+report-technical = 技术详情

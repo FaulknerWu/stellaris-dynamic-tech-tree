@@ -3,6 +3,7 @@ members = [
     "apps/dtt-cli",
     "apps/dtt-desktop/src-tauri",
     "crates/dtt-core",
+    "crates/dtt-i18n",
     "crates/dtt-stellaris",
     "crates/dtt-application",
 ]
@@ -18,10 +19,14 @@ description = "Stellaris Dynamic Technology Tree MOD generator"
 repository = "https://github.com/FaulknerWu/stellaris-dynamic-tech-tree"
 
 [workspace.dependencies]
+fluent-bundle = "0.16"
+icu_locale_core = { version = "2.3", features = ["alloc"] }
+sys-locale = "0.3"
+dtt-i18n = { path = "crates/dtt-i18n" }
 serde = { version = "1", features = ["derive", "rc"] }
 thiserror = "2"
 anyhow = "1"
-clap = { version = "4.5", features = ["derive"] }
+clap = { version = "4.5", features = ["derive", "string"] }
 jomini = { version = "0.35", default-features = false }
 rusqlite = { version = "0.40", features = ["bundled"] }
 zip = { version = "8", default-features = false, features = ["deflate"] }
