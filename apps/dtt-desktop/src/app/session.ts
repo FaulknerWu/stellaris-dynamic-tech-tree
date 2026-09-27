@@ -8,7 +8,7 @@ import type {
   InspectedSaveDto,
   SaveIndexDto,
   SaveLibraryDto,
-  SupportedLanguageDto,
+  GameLanguageDto,
   SwapUnknownStrategyDto,
   UnknownStrategyDto,
 } from "@/ipc/bindings";
@@ -46,7 +46,7 @@ export type SessionState = {
   selectedCountryId: number | null;
 
   settings: {
-    languages: SupportedLanguageDto[];
+    languages: GameLanguageDto[];
     unknownStrategy: UnknownStrategyDto;
     swapUnknownStrategy: SwapUnknownStrategyDto;
   };
@@ -86,7 +86,7 @@ export const INITIAL_SESSION_STATE: SessionState = {
   inspectionError: null,
   selectedCountryId: null,
   settings: {
-    languages: ["simp_chinese"],
+    languages: ["english"],
     unknownStrategy: "include_flagged",
     swapUnknownStrategy: "keep_base",
   },
@@ -115,7 +115,7 @@ export type SessionAction =
   | { type: "INSPECT_SAVE_SUCCESS"; inspection: InspectedSaveDto; seq: number }
   | { type: "INSPECT_SAVE_FAIL"; error: AppError; seq: number }
   | { type: "SELECT_COUNTRY_ID"; countryId: number | null }
-  | { type: "SET_LANGUAGES"; languages: SupportedLanguageDto[] }
+  | { type: "SET_LANGUAGES"; languages: GameLanguageDto[] }
   | { type: "SET_UNKNOWN_STRATEGY"; strategy: UnknownStrategyDto }
   | { type: "SET_SWAP_UNKNOWN_STRATEGY"; strategy: SwapUnknownStrategyDto }
   | { type: "START_GENERATION" }

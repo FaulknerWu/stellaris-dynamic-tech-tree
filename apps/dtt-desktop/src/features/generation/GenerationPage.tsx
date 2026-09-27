@@ -40,7 +40,7 @@ export function GenerationPage({ state }: GenerationPageProps) {
   return (
     <div className="h-full min-h-0">
       <Panel
-        title={t("generation:running.title")}
+        title={t($ => $.running.title, { ns: "generation" })}
         icon={Loader2}
         bodyClassName="flex flex-col items-center justify-center"
       >
@@ -55,12 +55,12 @@ export function GenerationPage({ state }: GenerationPageProps) {
               />
               <span>
                 {isCancelling
-                  ? t("generation:running.cancelling")
-                  : t(`generation:stages.${stage}`)}
+                  ? t($ => $.running.cancelling, { ns: "generation" })
+                  : t($ => $.stages[stage], { ns: "generation" })}
               </span>
             </div>
             <p className="text-body text-muted-foreground">
-              {t("generation:running.title")}
+              {t($ => $.running.title, { ns: "generation" })}
             </p>
           </div>
 
@@ -70,7 +70,7 @@ export function GenerationPage({ state }: GenerationPageProps) {
               className={cn(isCancelling && "animate-pulse opacity-70")}
             />
             <div className="flex justify-between font-mono text-meta text-muted-foreground">
-              <span>{t(`generation:stages.${stage}`)}</span>
+              <span>{t($ => $.stages[stage], { ns: "generation" })}</span>
               <span className="font-medium tabular-nums">{percent}%</span>
             </div>
           </div>
@@ -81,7 +81,7 @@ export function GenerationPage({ state }: GenerationPageProps) {
 
           {isLongWait && !isCancelling && (
             <p className="text-body text-muted-foreground animate-fadeIn">
-              {t("generation:running.longWaitHint")}
+              {t($ => $.running.longWaitHint, { ns: "generation" })}
             </p>
           )}
         </div>

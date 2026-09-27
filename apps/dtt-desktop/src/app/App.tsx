@@ -1,3 +1,6 @@
+import { ErrorAlert } from "@/components/ErrorAlert";
+import { currentLocale, listenForSystemLocale, setLocalePreference, useLocale } from "@/i18n/controller";
+import type { AppLocale } from "@/i18n/locale";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -29,17 +32,18 @@ import {
   type WizardStep,
 } from "./session";
 import {
-  DEFAULT_PERSISTED_DATA,
-  loadPersistedData,
+  type PersistedData,
   savePersistedData,
   type ThemePreference,
-  type UiLocale,
+
 } from "./store";
 import { applyTheme } from "./theme";
 
-export function App() {
-  const { i18n } = useTranslation();
-  const [state, dispatch] = useReducer(sessionReducer, INITIAL_SESSION_STATE);
+export function App({ persisted, initialSaveFailed }: { persisted: PersistedData; initialSaveFailed: boolean }) {
+  const localeState = useLocale();
+  useEffect(listenForSystemLocale, []);
+  const { t } = useTranslation();
+  const [state, dispatch] = useReducer(sessionReducer, sessionReducer(INITIAL_SESSION_STATE, { type: "LOAD_PERSISTED", data: persisted }));
   const [currentTheme, setCurrentTheme] = useState<ThemePreference>("system");
 
   const scanSeqRef = useRef(0);
@@ -53,15 +57,11 @@ export function App() {
     async function init() {
       dispatch({ type: "BOOTSTRAP_START" });
 
-      const persisted = await loadPersistedData();
       if (!mounted) return;
 
-      dispatch({ type: "LOAD_PERSISTED", data: persisted });
       setCurrentTheme(persisted.uiTheme);
       applyTheme(persisted.uiTheme);
-      if (persisted.uiLocale) {
-        i18n.changeLanguage(persisted.uiLocale);
-      }
+
 
       try {
         const bootstrap = await getBootstrapData();
@@ -74,7 +74,7 @@ export function App() {
           persisted.overrides.launcherDb !== null;
 
         if (hasOverrides) {
-          handleResolveEnvironment(persisted.overrides, bootstrap.environment.steamLibraries);
+          handleResolveEnvironment(persisted.overrides);
         } else if (!bootstrap.environmentError) {
           handleScanLibrary(
             persisted.saveSource,
@@ -101,7 +101,6 @@ export function App() {
   const handleResolveEnvironment = useCallback(
     (
       overrides: SessionState["overrides"],
-      steamLibsFallback?: string[],
     ) => {
       if (resolveDebounceTimerRef.current) {
         clearTimeout(resolveDebounceTimerRef.current);
@@ -238,6 +237,7 @@ export function App() {
     dispatch({ type: "START_GENERATION" });
 
     const request: {
+      reportLocale: AppLocale;
       saveFile: string;
       countryId?: number;
       settings: {
@@ -248,6 +248,7 @@ export function App() {
         swapUnknownStrategy: typeof state.settings.swapUnknownStrategy;
       };
     } = {
+      reportLocale: currentLocale(),
       saveFile: state.selectedSavePath,
       settings: {
         stellarisRoot: state.environment.gameRoot,
@@ -266,7 +267,7 @@ export function App() {
     };
 
     try {
-      const result = await runGeneration(request as any, handleProgress);
+      const result = await runGeneration(request, handleProgress);
       dispatch({ type: "GENERATION_DONE", result });
     } catch (err: any) {
       if (err.code === "GENERATION_CANCELLED") {
@@ -297,11 +298,6 @@ export function App() {
     savePersistedData({ uiTheme: theme });
   };
 
-  const handleChangeLocale = (locale: UiLocale) => {
-    i18n.changeLanguage(locale);
-    savePersistedData({ uiLocale: locale });
-  };
-
   useEffect(() => {
     savePersistedData({
       languages: state.settings.languages,
@@ -320,10 +316,12 @@ export function App() {
       onChangeSave={() => {
         dispatch({ type: "RESET_SAVE_SELECTION" });
       }}
-      onChangeLocale={handleChangeLocale}
+      onChangeLocale={setLocalePreference}
       onChangeTheme={handleChangeTheme}
       currentTheme={currentTheme}
     >
+      {state.bootstrap.status === "failed" && <ErrorAlert error={state.bootstrap.error} />}
+      {(localeState.saveFailed || initialSaveFailed) && <p role="alert">{t($ => $.settings.localeSaveFailed)}</p>}
       {state.step === "settings" && (
         <EnvironmentAndSettingsPage
           state={state}
@@ -331,10 +329,7 @@ export function App() {
           onResolveEnvironment={handleResolveEnvironment}
           onRescanEnvironment={() => {
             if (state.bootstrap.status === "ready") {
-              handleResolveEnvironment(
-                state.overrides,
-                state.bootstrap.data.environment.steamLibraries,
-              );
+              handleResolveEnvironment(state.overrides);
             }
           }}
         />

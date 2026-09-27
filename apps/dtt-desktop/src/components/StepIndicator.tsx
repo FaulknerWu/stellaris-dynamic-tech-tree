@@ -11,11 +11,11 @@ interface StepIndicatorProps {
   onStepClick?: (step: WizardStep) => void;
 }
 
-const STEPS: { id: WizardStep; number: number; labelKey: string }[] = [
-  { id: "settings", number: 1, labelKey: "steps.settings" },
-  { id: "saves", number: 2, labelKey: "steps.saves" },
-  { id: "generate", number: 3, labelKey: "steps.generate" },
-  { id: "results", number: 4, labelKey: "steps.results" },
+const STEPS: { id: WizardStep; number: number }[] = [
+  { id: "settings", number: 1 },
+  { id: "saves", number: 2 },
+  { id: "generate", number: 3 },
+  { id: "results", number: 4 },
 ];
 
 export function StepIndicator({
@@ -65,7 +65,7 @@ export function StepIndicator({
   };
 
   return (
-    <nav aria-label={t("wizard.ariaLabel")} className="flex items-center gap-1.5 sm:gap-2.5">
+    <nav aria-label={t($ => $.wizard.ariaLabel)} className="flex items-center gap-1.5 sm:gap-2.5">
       {STEPS.map((step, index) => {
         const status = getStepStatus(step.id);
         const clickable = isClickable(step.id);
@@ -92,6 +92,7 @@ export function StepIndicator({
                 clickable ? "cursor-pointer hover:opacity-80" : "cursor-default",
               )}
               aria-current={status === "current" ? "step" : undefined}
+              aria-label={t($ => $.steps[step.id])}
             >
               <div
                 className={cn(
@@ -111,11 +112,11 @@ export function StepIndicator({
               </div>
               <span
                 className={cn(
-                  "hidden text-body sm:inline whitespace-nowrap",
+                  "hidden text-body xl:inline whitespace-nowrap",
                   status === "current" ? "font-medium text-foreground" : "text-muted-foreground",
                 )}
               >
-                {t(step.labelKey)}
+                {t($ => $.steps[step.id])}
               </span>
             </button>
           </React.Fragment>

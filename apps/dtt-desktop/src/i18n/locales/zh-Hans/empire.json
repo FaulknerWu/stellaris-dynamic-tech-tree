@@ -36,6 +36,6 @@
   "playerCountrySwitch": "玩家国家切换",
   "selectSaveHint": "请在左侧列表中选择一个有效的非铁人文本存档",
   "detail": "详细",
-  "showMore": "展开剩余 {{count}} 项",
-  "showLess": "收起"
+  "showLess": "收起",
+  "showMore_other": "展开剩余 {{count, number}} 项"
 }

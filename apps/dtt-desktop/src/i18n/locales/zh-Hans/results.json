@@ -3,22 +3,22 @@
   "banner": {
     "success": {
       "title": "生成完成",
-      "description": "成功导出 {{writtenCount}} 个本地化文件与依赖树产物。"
+      "description": "成功导出 {{writtenCount, number}} 个本地化文件与依赖树产物。"
     },
     "incomplete": {
       "title": "部分完成",
-      "description": "{{failedCount}} 个文件写入失败，其余 {{writtenCount}} 个文件已正常生成。"
+      "description": "{{failedCount, number}} 个文件写入失败，其余 {{writtenCount, number}} 个文件已正常生成。"
     }
   },
   "stats": {
     "sources": "数据来源",
-    "sourcesDesc": "本体与 MOD 共 {{count}} 个来源",
     "totalTech": "科技总数",
     "totalTechDesc": "合并后的科技定义数量",
     "eligibleTech": "适用科技",
     "eligibleTechDesc": "按生成时帝国身份保留的未来科技路线",
     "swaps": "变体替换",
-    "swapsDesc": "命中 {{matched}} 项，未匹配 {{noMatch}} 项，不确定 {{uncertain}} 项"
+    "swapsDesc": "命中 {{matched, number}} 项，未匹配 {{noMatch, number}} 项，不确定 {{uncertain, number}} 项",
+    "sourcesDesc_other": "本体与 MOD 共 {{count, number}} 个来源"
   },
   "files": {
     "title": "产出文件清单",
@@ -29,7 +29,6 @@
   },
   "diagnostics": {
     "title": "诊断信息",
-    "truncated": "另有 {{count}} 条诊断信息未在此处全部展示，详情请查看诊断报告文件。",
     "categories": {
       "loadOrder": {
         "title": "MOD 加载提示",
@@ -63,7 +62,8 @@
         "title": "写入失败",
         "description": "未能写入目标磁盘的文件"
       }
-    }
+    },
+    "truncated_other": "另有 {{count, number}} 条诊断信息未在此处全部展示，详情请查看诊断报告文件。"
   },
   "guide": {
     "title": "如何在游戏中启用",

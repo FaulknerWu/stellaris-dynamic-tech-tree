@@ -24,7 +24,6 @@
   },
   "settings": {
     "title": "设置",
-    "uiLocale": "界面语言",
     "theme": "主题外观",
     "themeLight": "浅色模式",
     "themeDark": "深色模式",
@@ -32,7 +31,9 @@
     "about": "关于 DTT",
     "version": "版本",
     "license": "开源协议",
-    "aboutText": "Dynamic Technology Tree 是一个用于从群星存档和已加载 MOD 自动计算、导出科技依赖树与本地化词条的工具。"
+    "aboutText": "Dynamic Technology Tree 是一个用于从群星存档和已加载 MOD 自动计算、导出科技依赖树与本地化词条的工具。",
+    "localeSaveFailed": "无法保存偏好设置，当前选择仍在本次会话中生效。",
+    "localePreference": "界面语言"
   },
   "wizard": {
     "ariaLabel": "步骤向导"
@@ -47,5 +48,8 @@
   "status": {
     "ready": "已就绪",
     "incomplete": "未就绪"
-  }
+  },
+  "appTitle": "DTT — 动态科技树",
+  "feedback": "交流反馈请加 QQ 群：{{group}}",
+  "noDate": "无日期"
 }

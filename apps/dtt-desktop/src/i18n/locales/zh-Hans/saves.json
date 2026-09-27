@@ -7,7 +7,6 @@
   "manualSelect": "从文件选择存档…",
   "libraryTitle": "存档库",
   "empireTitle": "帝国信息审查",
-  "availableCount": "{{count}} 个可用存档",
   "manualSelectFile": "手动选择 .sav 文件",
   "listAriaLabel": "存档列表",
   "gameDate": "游戏星历：{{date}}",
@@ -34,5 +33,15 @@
       "title": "没有找到云存档",
       "description": "未检测到 Steam 云存档或 Steam 库列表为空。请确认 Steam 云同步已开启，或改用本地/手动选择。"
     }
+  },
+  "availableCount_other": "{{count, number}} 个可用存档",
+  "scanFailures": {
+    "steam_users": "无法读取 Steam 用户目录：{{path}}",
+    "steam_user_entry": "无法读取 Steam 用户目录项：{{path}}",
+    "save_root": "无法读取存档根目录：{{path}}",
+    "campaign_entry": "无法读取战役目录项：{{path}}",
+    "campaign": "无法读取战役目录：{{path}}",
+    "save_entry": "无法读取存档目录项：{{path}}",
+    "file_metadata": "无法读取存档文件属性：{{path}}"
   }
 }

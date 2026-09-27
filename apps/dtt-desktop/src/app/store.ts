@@ -1,128 +1,83 @@
 import { LazyStore } from "@tauri-apps/plugin-store";
-
-import type {
-  SupportedLanguageDto,
-  SwapUnknownStrategyDto,
-  UnknownStrategyDto,
-} from "@/ipc/bindings";
-
+import { isTauri } from "@tauri-apps/api/core";
+import { validatePreference, type LocalePreference } from "@/i18n/locale";
+import type { GameLanguageDto, SwapUnknownStrategyDto, UnknownStrategyDto } from "@/ipc/bindings";
 export type ThemePreference = "light" | "dark" | "system";
-export type UiLocale = "zh-CN" | "en";
 
 export interface PersistedData {
+  schemaVersion: number;
   overrides: {
     gameRoot: string | null;
     documentsDir: string | null;
     launcherDb: string | null;
   };
-  languages: SupportedLanguageDto[];
+  languages: GameLanguageDto[];
   unknownStrategy: UnknownStrategyDto;
   swapUnknownStrategy: SwapUnknownStrategyDto;
-  uiLocale: UiLocale;
+  localePreference: LocalePreference;
   uiTheme: ThemePreference;
   saveSource: "local" | "steam_cloud";
 }
 
 export const DEFAULT_PERSISTED_DATA: PersistedData = {
+  schemaVersion: 2,
   overrides: {
     gameRoot: null,
     documentsDir: null,
     launcherDb: null,
   },
-  languages: ["simp_chinese"],
+  languages: ["english"],
   unknownStrategy: "include_flagged",
   swapUnknownStrategy: "keep_base",
-  uiLocale: "zh-CN",
+  localePreference: "system",
   uiTheme: "system",
   saveSource: "local",
 };
 
+
 const STORE_FILENAME = "dtt-desktop.json";
-let storeInstance: LazyStore | null = null;
-
-function validatedSwapStrategy(value: unknown): SwapUnknownStrategyDto {
-  return value === "keep_base" || value === "error"
-    ? value
-    : DEFAULT_PERSISTED_DATA.swapUnknownStrategy;
+const store = new LazyStore(STORE_FILENAME);
+export function validatePersistedData(raw: unknown): PersistedData {
+  const value = raw && typeof raw === "object" ? raw as Record<string, unknown> : {};
+  if (value.schemaVersion !== 2) return { ...DEFAULT_PERSISTED_DATA };
+  const languageValues = Array.isArray(value.languages) ? value.languages : ["english"];
+  const languages = [...new Set(languageValues.filter((v): v is "english" | "simp_chinese" => v === "english" || v === "simp_chinese"))];
+  const overrides = value.overrides && typeof value.overrides === "object" ? value.overrides as Record<string, unknown> : {};
+  const path = (key: string) => typeof overrides[key] === "string" ? overrides[key] as string : null;
+  return {
+    schemaVersion: 2,
+    overrides: { gameRoot: path("gameRoot"), documentsDir: path("documentsDir"), launcherDb: path("launcherDb") },
+    languages: languages.length ? languages : ["english"],
+    unknownStrategy: value.unknownStrategy === "exclude_strict" || value.unknownStrategy === "error" ? value.unknownStrategy : "include_flagged",
+    swapUnknownStrategy: value.swapUnknownStrategy === "error" ? "error" : "keep_base",
+    localePreference: validatePreference(value.localePreference),
+    uiTheme: value.uiTheme === "light" || value.uiTheme === "dark" ? value.uiTheme : "system",
+    saveSource: value.saveSource === "steam_cloud" ? "steam_cloud" : "local",
+  };
 }
-
-function getStore(): LazyStore {
-  if (!storeInstance) {
-    storeInstance = new LazyStore(STORE_FILENAME);
-  }
-  return storeInstance;
-}
-
 export async function loadPersistedData(): Promise<PersistedData> {
+  let raw: unknown;
   try {
-    const store = getStore();
-    const overrides = (await store.get<PersistedData["overrides"]>("overrides")) ?? DEFAULT_PERSISTED_DATA.overrides;
-    const languages = (await store.get<SupportedLanguageDto[]>("settings.languages")) ?? DEFAULT_PERSISTED_DATA.languages;
-    const unknownStrategy = (await store.get<UnknownStrategyDto>("settings.unknownStrategy")) ?? DEFAULT_PERSISTED_DATA.unknownStrategy;
-    const swapUnknownStrategy = validatedSwapStrategy(await store.get<unknown>("settings.swapUnknownStrategy"));
-    const uiLocale = (await store.get<UiLocale>("ui.locale")) ?? DEFAULT_PERSISTED_DATA.uiLocale;
-    const uiTheme = (await store.get<ThemePreference>("ui.theme")) ?? DEFAULT_PERSISTED_DATA.uiTheme;
-    const saveSource = (await store.get<"local" | "steam_cloud">("saveSource")) ?? DEFAULT_PERSISTED_DATA.saveSource;
-
-    return {
-      overrides,
-      languages,
-      unknownStrategy,
-      swapUnknownStrategy,
-      uiLocale,
-      uiTheme,
-      saveSource,
-    };
-  } catch (err) {
-    console.warn("Failed to load from Tauri store, using defaults/localStorage fallback", err);
-    try {
-      const raw = localStorage.getItem(STORE_FILENAME);
-      if (raw) {
-        const stored = JSON.parse(raw);
-        return {
-          ...DEFAULT_PERSISTED_DATA,
-          ...stored,
-          swapUnknownStrategy: validatedSwapStrategy(stored.swapUnknownStrategy),
-        };
-      }
-    } catch {
+    if (isTauri()) {
+      raw = await store.get("preferences");
+    } else {
+      raw = JSON.parse(localStorage.getItem(STORE_FILENAME) ?? "null");
     }
-    return DEFAULT_PERSISTED_DATA;
-  }
+  } catch { raw = null; }
+  return validatePersistedData(raw);
 }
-
-export async function savePersistedData(data: Partial<PersistedData>): Promise<void> {
-  try {
-    const store = getStore();
-    if (data.overrides !== undefined) {
-      await store.set("overrides", data.overrides);
+let writes: Promise<void> = Promise.resolve();
+export function savePersistedData(data: Partial<PersistedData>): Promise<void> {
+  const next = writes.catch(() => {}).then(async () => {
+    const current = await loadPersistedData();
+    const updated = validatePersistedData({ ...current, ...data, schemaVersion: 2 });
+    if (isTauri()) {
+      await store.set("preferences", updated);
+      await store.save();
+    } else {
+      localStorage.setItem(STORE_FILENAME, JSON.stringify(updated));
     }
-    if (data.languages !== undefined) {
-      await store.set("settings.languages", data.languages);
-    }
-    if (data.unknownStrategy !== undefined) {
-      await store.set("settings.unknownStrategy", data.unknownStrategy);
-    }
-    if (data.swapUnknownStrategy !== undefined) {
-      await store.set("settings.swapUnknownStrategy", data.swapUnknownStrategy);
-    }
-    if (data.uiLocale !== undefined) {
-      await store.set("ui.locale", data.uiLocale);
-    }
-    if (data.uiTheme !== undefined) {
-      await store.set("ui.theme", data.uiTheme);
-    }
-    if (data.saveSource !== undefined) {
-      await store.set("saveSource", data.saveSource);
-    }
-    await store.save();
-  } catch (err) {
-    console.warn("Failed to save to Tauri store, falling back to localStorage", err);
-    try {
-      const current = localStorage.getItem(STORE_FILENAME);
-      const parsed = current ? JSON.parse(current) : {};
-      localStorage.setItem(STORE_FILENAME, JSON.stringify({ ...parsed, ...data }));
-    } catch {
-    }
-  }
+  });
+  writes = next;
+  return next;
 }

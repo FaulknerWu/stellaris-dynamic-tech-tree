@@ -3,22 +3,23 @@
   "banner": {
     "success": {
       "title": "Generation Completed",
-      "description": "Successfully exported {{writtenCount}} localisation and dependency tree files."
+      "description": "Successfully exported {{writtenCount, number}} localisation and dependency tree files."
     },
     "incomplete": {
       "title": "Partially Completed",
-      "description": "{{failedCount}} files failed to write, while {{writtenCount}} files were generated normally."
+      "description": "{{failedCount, number}} files failed to write, while {{writtenCount, number}} files were generated normally."
     }
   },
   "stats": {
     "sources": "Data Sources",
-    "sourcesDesc": "{{count}} total base and mod sources",
     "totalTech": "Total Techs",
     "totalTechDesc": "Combined technology definitions",
     "eligibleTech": "Eligible Techs",
     "eligibleTechDesc": "Future technology routes retained for the selected empire identity",
     "swaps": "Tech Swaps",
-    "swapsDesc": "{{matched}} matched, {{noMatch}} unmatched, {{uncertain}} uncertain"
+    "swapsDesc": "{{matched, number}} matched, {{noMatch, number}} unmatched, {{uncertain, number}} uncertain",
+    "sourcesDesc_other": "{{count, number}} total base and mod sources",
+    "sourcesDesc_one": "{{count, number}} total base and mod sources"
   },
   "files": {
     "title": "Output Files",
@@ -29,7 +30,6 @@
   },
   "diagnostics": {
     "title": "Diagnostics",
-    "truncated": "There are {{count}} more diagnostic items not displayed here. See the report file for full details.",
     "categories": {
       "loadOrder": {
         "title": "Mod Loading Notices",
@@ -63,7 +63,9 @@
         "title": "Write Failures",
         "description": "Files that could not be written to destination"
       }
-    }
+    },
+    "truncated_other": "There are {{count, number}} more diagnostic items not displayed here. See the report file for full details.",
+    "truncated_one": "There are {{count, number}} more diagnostic item not displayed here. See the report file for full details."
   },
   "guide": {
     "title": "How to Enable in Game",

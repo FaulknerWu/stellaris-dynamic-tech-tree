@@ -1,5 +1,6 @@
+import { errorTitle } from "@/i18n/messages";
 import { AlertCircle, AlertTriangle, ChevronRight, Info } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -34,9 +35,7 @@ export function ErrorAlert({
 
   const isNeutral = error.code === "GENERATION_CANCELLED";
 
-  const hint = t(`codeHints.${error.code}`, {
-    defaultValue: "",
-  });
+  const hint = t($ => $.codeHints[error.code]);
 
   return (
     <Alert
@@ -61,7 +60,7 @@ export function ErrorAlert({
 
         <div className="min-w-0 flex-1 space-y-1">
           <AlertTitle className="text-body font-semibold leading-none tracking-tight">
-            {error.message}
+            {errorTitle(error)}
           </AlertTitle>
 
           {hint && (
@@ -72,7 +71,7 @@ export function ErrorAlert({
 
           {error.context?.path && (
             <div className="font-mono text-meta break-all text-muted-foreground">
-              {t("path", { path: error.context.path })}
+              {t($ => $.path, { path: error.context.path })}
             </div>
           )}
 
@@ -85,12 +84,12 @@ export function ErrorAlert({
                 onClick={onRemedy}
                 className="h-7 px-2.5 text-body"
               >
-                {remedyText || t("remedy.retry")}
+                {remedyText || t($ => $.remedy.retry)}
               </Button>
             </div>
           )}
 
-          {error.detail && (
+          {error.technicalDetail && (
             <Collapsible
               open={detailOpen}
               onOpenChange={setDetailOpen}
@@ -103,11 +102,11 @@ export function ErrorAlert({
                     detailOpen && "rotate-90",
                   )}
                 />
-                <span>{t("details")}</span>
+                <span>{t($ => $.details)}</span>
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-1">
                 <pre className="max-h-36 overflow-auto whitespace-pre-wrap rounded border border-border-subtle bg-surface p-2 font-mono text-meta leading-relaxed text-muted-foreground select-text">
-                  {error.detail}
+                  {error.technicalDetail}
                 </pre>
               </CollapsibleContent>
             </Collapsible>

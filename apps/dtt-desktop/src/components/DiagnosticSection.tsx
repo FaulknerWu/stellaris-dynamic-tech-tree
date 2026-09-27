@@ -1,3 +1,5 @@
+import { diagnosticMessage } from "@/i18n/messages";
+import type { resources } from "@/i18n/resources";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,7 +9,7 @@ import type { GenerationDiagnosticItemDto } from "@/ipc/bindings";
 import { cn } from "@/lib/utils";
 
 interface DiagnosticSectionProps {
-  categoryKey: string;
+  categoryKey: keyof typeof resources.en.results.diagnostics.categories;
   items: GenerationDiagnosticItemDto[];
 }
 
@@ -63,10 +65,10 @@ export function DiagnosticSection({
             )}
           />
           <span className="font-medium text-foreground">
-            {t(`results:diagnostics.categories.${categoryKey}.title`)}
+            {t($ => $.diagnostics.categories[categoryKey].title, { ns: "results" })}
           </span>
           <span className="hidden text-meta text-muted-foreground sm:inline">
-            {t(`results:diagnostics.categories.${categoryKey}.description`)}
+            {t($ => $.diagnostics.categories[categoryKey].description, { ns: "results" })}
           </span>
         </div>
         <Badge variant="secondary" className="h-5 px-1.5 text-meta font-normal tabular-nums">
@@ -76,7 +78,8 @@ export function DiagnosticSection({
 
       {isOpen && count > 0 && (
         <div className="space-y-2 border-t border-border-subtle px-3.5 py-3">
-          {displayedItems.map((item, idx) => {
+          {displayedItems.map((data, idx) => {
+            const item = diagnosticMessage(data);
             const hasDetail = !!item.detail;
             const isDetailOpen = expandedItemIndices.has(idx);
 
@@ -93,7 +96,7 @@ export function DiagnosticSection({
                       className="flex shrink-0 items-center gap-0.5 text-meta text-muted-foreground hover:text-foreground"
                     >
                       <span>
-                        {isDetailOpen ? t("empire:showLess") : t("empire:detail")}
+                        {isDetailOpen ? t($ => $.showLess, { ns: "empire" }) : t($ => $.detail, { ns: "empire" })}
                       </span>
                       <ChevronDown
                         className={cn(
@@ -116,7 +119,7 @@ export function DiagnosticSection({
 
           {truncatedCount > 0 && (
             <p className="pt-1 text-center text-meta text-muted-foreground">
-              {t("results:diagnostics.truncated", { count: truncatedCount })}
+              {t($ => $.diagnostics.truncated, { ns: "results", count: truncatedCount })}
             </p>
           )}
         </div>

@@ -1,0 +1,62 @@
+{
+  "missing_mod_descriptor": "Missing descriptor.mod: {{name}}. The MOD is loaded without its replace_path rules.",
+  "game_data": "Game data diagnostic: {{source}} / {{subject}} / {{category}} / {{reason}} / {{offset}}",
+  "unhandled_definition": "Unhandled fields in {{technology}} ({{source}}): {{items}}",
+  "localisation": "Localisation read failed: {{language}} / {{source}} / {{path}} / {{reason}}",
+  "self_reference": "Self reference: {{technology}}",
+  "cycle": "Dependency cycle: {{items}}",
+  "write_failed": "Failed to {{operation}}: {{path}}",
+  "operations": {
+    "write": "write",
+    "remove": "remove",
+    "format": "format"
+  },
+  "unknown_condition_other": "Unknown condition {{name}}: {{count, number}} occurrences; technologies: {{items}}",
+  "unknown_condition_one": "Unknown condition {{name}}: {{count, number}} occurrence; technology: {{items}}",
+  "deferred_condition_other": "Deferred condition {{name}}: {{count, number}} occurrences; technologies: {{items}}",
+  "deferred_condition_one": "Deferred condition {{name}}: {{count, number}} occurrence; technology: {{items}}",
+  "issues": {
+    "invalid_utf8": "File is not valid UTF-8.",
+    "invalid_syntax": "Invalid Clausewitz syntax.",
+    "expected_scalar": "Expected a scalar value.",
+    "expected_object": "Expected an object.",
+    "invalid_field": "Missing or invalid field: {{field}}.",
+    "overwritten": "Definition overwritten by the current source. Previous source: {{previous}}.",
+    "inline_cycle": "Inline script contains a cycle: {{script}}.",
+    "inline_missing": "Inline script not found: {{script}}.",
+    "invalid_inline_call": "inline_script must be a path or an object with a script field.",
+    "isolated_branch": "Isolated else_if or else cannot be converted reliably.",
+    "invalid_condition": "Condition structure cannot be converted.",
+    "malformed_argument": "Trigger arguments cannot be parsed.",
+    "structured_argument": "Nested trigger arguments have no supported interpreter.",
+    "duplicate_parameter": "Duplicate parameters prevent reliable evaluation.",
+    "invalid_swap": "Skipping swap {{index}}: missing or invalid {{field}}.",
+    "duplicate_field": "Duplicate field {{field}}; only the first is read. Game merge rules are unverified.",
+    "field_case": "Field {{field}} differs in case from {{expected}}; no automatic conversion is applied."
+  },
+  "conditions": {
+    "trigger": "Unrecognized trigger",
+    "operator": "Unsupported comparison operator",
+    "malformed_argument": "Invalid trigger arguments",
+    "structured_argument": "Unsupported structured arguments",
+    "missing_previous_scope": "No corresponding previous scope",
+    "missing_event_source": "Technology conditions have no event source object",
+    "missing_founder_species": "Founder species was not extracted",
+    "unknown_species_relation": "Species relation is unverified",
+    "unknown_owner": "Cannot determine a unique owner country",
+    "unknown_trigger": "Unrecognized trigger; uncertainty retained",
+    "expected_scalar": "Identity condition requires a scalar",
+    "unbound_argument": "Empty argument or unbound variable",
+    "invalid_boolean": "Boolean conditions require yes or no",
+    "missing_identity": "Opening identity data is missing or unreadable",
+    "unverified_structure": "Condition structure is unverified",
+    "unknown_scope": "Unresolved scope reference",
+    "unknown_collection": "Collection type or source is unknown",
+    "recursive_script": "Recursive scripted trigger",
+    "type_mismatch": "Target type mismatch"
+  },
+  "localisationReasons": {
+    "invalid_utf8": "File is not valid UTF-8.",
+    "read_failed": "File could not be read."
+  }
+}

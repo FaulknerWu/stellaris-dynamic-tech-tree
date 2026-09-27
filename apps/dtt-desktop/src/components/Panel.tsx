@@ -25,7 +25,7 @@ export function Panel({
   return (
     <section
       className={cn(
-        "flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card",
+        "flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-card",
         className,
       )}
     >
@@ -33,7 +33,7 @@ export function Panel({
         <div className="min-w-0">
           <h2 className="flex items-center gap-2 text-title font-semibold text-foreground">
             {Icon ? <Icon className="size-4 shrink-0 text-primary" /> : null}
-            <span className="truncate">{title}</span>
+            <span className="break-words">{title}</span>
           </h2>
           {description ? (
             <p className="mt-0.5 truncate text-meta text-muted-foreground">

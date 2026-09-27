@@ -1,6 +1,5 @@
 {
   "codeHints": {
-    "INVALID_ENVIRONMENT": "Environment paths are incomplete or invalid. Expand the Environment card to check and supply the Stellaris game root and documents directory.",
     "LAUNCHER_DATABASE_UNAVAILABLE": "Launcher database (launcher-v2.sqlite) is unreadable or missing. Please browse and select a valid database file.",
     "SAVE_UNAVAILABLE": "Specified save file does not exist or lacks read permission. Please refresh the save library or reselect a save.",
     "SAVE_CONTAINER_CORRUPT": "Save container or internal gamestate structure is corrupt. Please try another save.",
@@ -9,11 +8,32 @@
     "PLAYER_COUNTRY_REQUIRED": "Multiple player empires found in save. Please select an empire in the Empire card.",
     "GENERATION_BUSY": "A generation task is already running. Please wait or cancel the active task before starting a new one.",
     "GENERATION_CANCELLED": "Generation task was cancelled per user request.",
-    "INTERNAL": "An internal error occurred. You can expand the technical details below when reporting this issue."
+    "INTERNAL": "An internal error occurred. You can expand the technical details below when reporting this issue.",
+    "MISSING_SETTING": "A required environment setting is missing. Select the game directory, documents directory, and launcher database.",
+    "INVALID_PATH": "The selected path is unavailable or has the wrong type. Check the environment paths.",
+    "NO_OUTPUT_LANGUAGE": "Select at least one game output language.",
+    "EXECUTABLE_PATH_UNAVAILABLE": "The executable location could not be determined. Check the application installation.",
+    "NO_TECHNOLOGY_DEFINITIONS": "No technologies were loaded from common/technology. Check the game directory and active MODs."
   },
   "remedy": {
     "retry": "Retry"
   },
   "details": "Technical Details",
-  "path": "Path: {{path}}"
+  "path": "Path: {{path}}",
+  "titles": {
+    "SAVE_UNAVAILABLE": "Save unavailable",
+    "SAVE_CONTAINER_CORRUPT": "Corrupt save",
+    "UNSUPPORTED_BINARY_SAVE": "Unsupported binary or ironman save",
+    "PLAYER_COUNTRY_MISSING": "No player empire found",
+    "PLAYER_COUNTRY_REQUIRED": "Select a player empire",
+    "LAUNCHER_DATABASE_UNAVAILABLE": "Launcher database unavailable",
+    "GENERATION_BUSY": "Generation already running",
+    "GENERATION_CANCELLED": "Generation cancelled",
+    "INTERNAL": "Internal error",
+    "MISSING_SETTING": "Missing required setting",
+    "INVALID_PATH": "Invalid path",
+    "NO_OUTPUT_LANGUAGE": "No output language selected",
+    "EXECUTABLE_PATH_UNAVAILABLE": "Output directory unavailable",
+    "NO_TECHNOLOGY_DEFINITIONS": "No technology definitions"
+  }
 }

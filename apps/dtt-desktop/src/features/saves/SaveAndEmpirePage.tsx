@@ -123,7 +123,7 @@ export function SaveAndEmpirePage({
 
     if (state.manualSave) {
       list.push({
-        campaignKey: state.manualSave.metadata?.name || t("saves:customSelection"),
+        campaignKey: state.manualSave.metadata?.name || t($ => $.customSelection, { ns: "saves" }),
         save: state.manualSave,
       });
     }
@@ -150,7 +150,7 @@ export function SaveAndEmpirePage({
       const selected = await open({
         directory: false,
         multiple: false,
-        title: t("saves:manualSelect"),
+        title: t($ => $.manualSelect, { ns: "saves" }),
         filters: [{ name: "Stellaris Save", extensions: ["sav"] }],
       });
 
@@ -192,15 +192,15 @@ export function SaveAndEmpirePage({
     state.inspection?.playerCountries ?? [];
 
   const emptyKey =
-    state.saveSource === "steam_cloud" ? "empty.steamCloud" : "empty.local";
+    state.saveSource === "steam_cloud" ? "steamCloud" : "local";
 
   return (
     <div className="grid h-full min-h-0 grid-cols-1 gap-4 lg:grid-cols-12">
       <Panel
         className="lg:col-span-5"
-        title={t("saves:libraryTitle")}
+        title={t($ => $.libraryTitle, { ns: "saves" })}
         icon={Globe}
-        description={t("saves:availableCount", { count: availableSavesCount })}
+        description={t($ => $.availableCount, { ns: "saves", count: availableSavesCount })}
         action={
           <>
             <ToggleGroup
@@ -210,18 +210,18 @@ export function SaveAndEmpirePage({
               size="sm"
               spacing={0}
               disabled={isScanning}
-              aria-label={t("saves:title")}
+              aria-label={t($ => $.title, { ns: "saves" })}
             >
               <ToggleGroupItem value="local" className="gap-1.5 px-2.5 text-body">
                 <HardDrive className="size-3.5" />
-                <span>{t("saves:sources.local")}</span>
+                <span>{t($ => $.sources.local, { ns: "saves" })}</span>
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="steam_cloud"
                 className="gap-1.5 px-2.5 text-body"
               >
                 <Cloud className="size-3.5" />
-                <span>{t("saves:sources.steamCloud")}</span>
+                <span>{t($ => $.sources.steamCloud, { ns: "saves" })}</span>
               </ToggleGroupItem>
             </ToggleGroup>
 
@@ -233,7 +233,7 @@ export function SaveAndEmpirePage({
               className="h-8 gap-1.5 border-dashed text-body"
             >
               <Upload className="size-3.5" />
-              <span>{t("saves:manualSelectFile")}</span>
+              <span>{t($ => $.manualSelectFile, { ns: "saves" })}</span>
             </Button>
 
             <Button
@@ -243,7 +243,7 @@ export function SaveAndEmpirePage({
               disabled={isScanning}
               onClick={() => onScanLibrary()}
               className="size-8"
-              aria-label={t("common:actions.refresh")}
+              aria-label={t($ => $.actions.refresh, { ns: "common" })}
             >
               <RefreshCw
                 className={`size-3.5 ${isScanning ? "animate-spin" : ""}`}
@@ -257,11 +257,17 @@ export function SaveAndEmpirePage({
             <ErrorAlert
               error={state.libraryError}
               onRemedy={() => onScanLibrary()}
-              remedyText={t("common:actions.retry")}
+              remedyText={t($ => $.actions.retry, { ns: "common" })}
             />
           </div>
         )}
 
+        {state.library?.diagnostics.map((diagnostic, index) => (
+          <details key={index} className="mb-2 text-meta text-warning">
+            <summary>{t($ => $.scanFailures[diagnostic.kind], { ns: "saves", path: diagnostic.path })}</summary>
+            <pre className="whitespace-pre-wrap break-all">{diagnostic.technicalDetail}</pre>
+          </details>
+        ))}
         {isScanning ? (
           <div className="space-y-2">
             <Skeleton className="h-16 w-full rounded-lg" />
@@ -271,9 +277,9 @@ export function SaveAndEmpirePage({
         ) : allSavesWithCampaign.length === 0 ? (
           <Empty className="h-full min-h-0 border border-dashed border-border-subtle">
             <EmptyHeader>
-              <EmptyTitle className="text-body">{t(`saves:${emptyKey}.title`)}</EmptyTitle>
+              <EmptyTitle className="text-body">{t($ => $.empty[emptyKey].title, { ns: "saves" })}</EmptyTitle>
               <EmptyDescription className="text-meta">
-                {t(`saves:${emptyKey}.description`)}
+                {t($ => $.empty[emptyKey].description, { ns: "saves" })}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -282,7 +288,7 @@ export function SaveAndEmpirePage({
             value={state.selectedSavePath ?? undefined}
             onValueChange={handleSaveChange}
             className="gap-1.5"
-            aria-label={t("saves:listAriaLabel")}
+            aria-label={t($ => $.listAriaLabel, { ns: "saves" })}
           >
             {allSavesWithCampaign.map(({ campaignKey, save }) => {
               const isSelected = state.selectedSavePath === save.path;
@@ -337,7 +343,7 @@ export function SaveAndEmpirePage({
                           variant="success"
                           className="h-4 px-1.5 text-meta font-normal"
                         >
-                          {t("saves:state.text.badge")}
+                          {t($ => $.state.text.badge, { ns: "saves" })}
                         </Badge>
                       )}
                       {isBinary && (
@@ -345,7 +351,7 @@ export function SaveAndEmpirePage({
                           variant="warning"
                           className="h-4 px-1.5 text-meta font-normal"
                         >
-                          {t("saves:state.binary.badge")}
+                          {t($ => $.state.binary.badge, { ns: "saves" })}
                         </Badge>
                       )}
                       {isCorrupt && (
@@ -353,7 +359,7 @@ export function SaveAndEmpirePage({
                           variant="destructive"
                           className="h-4 px-1.5 text-meta font-normal"
                         >
-                          {t("saves:state.corrupt.badge")}
+                          {t($ => $.state.corrupt.badge, { ns: "saves" })}
                         </Badge>
                       )}
                     </div>
@@ -362,7 +368,7 @@ export function SaveAndEmpirePage({
                   <div className="flex items-center gap-3 font-mono text-meta text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Calendar className="size-3 text-primary" />
-                      <span>{t("saves:gameDate", { date })}</span>
+                      <span>{t($ => $.gameDate, { ns: "saves", date })}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="size-2.5 text-muted-foreground" />
@@ -379,14 +385,14 @@ export function SaveAndEmpirePage({
                   {isBinary && (
                     <div className="mt-2 flex items-center gap-1.5 rounded border border-warning/30 bg-warning/10 px-2 py-1 text-meta text-warning">
                       <Lock className="size-3 shrink-0" />
-                      <span>{t("saves:binaryWarning")}</span>
+                      <span>{t($ => $.binaryWarning, { ns: "saves" })}</span>
                     </div>
                   )}
                   {isCorrupt && (
                     <div className="mt-2 flex items-center gap-1.5 rounded border border-destructive/30 bg-destructive/10 px-2 py-1 text-meta text-destructive">
                       <XCircle className="size-3 shrink-0" />
                       <span>
-                        {save.unavailableReason || t("saves:corruptFallback")}
+                        {t($ => $.corruptFallback, { ns: "saves" })}
                       </span>
                     </div>
                   )}
@@ -399,14 +405,14 @@ export function SaveAndEmpirePage({
 
       <Panel
         className="lg:col-span-7"
-        title={t("saves:empireTitle")}
+        title={t($ => $.empireTitle, { ns: "saves" })}
         icon={Sparkles}
       >
         {isInspecting ? (
           <div className="space-y-2 py-6">
             <div className="flex items-center justify-center gap-2 text-body text-muted-foreground">
               <Sparkles className="size-4 animate-spin text-primary" />
-              <span>{t("empire:inspecting")}</span>
+              <span>{t($ => $.inspecting, { ns: "empire" })}</span>
             </div>
             <Skeleton className="h-14 w-full rounded-md" />
             <Skeleton className="h-32 w-full rounded-md" />
@@ -418,7 +424,7 @@ export function SaveAndEmpirePage({
             {playerCandidates.length > 1 && (
               <div className="flex items-center justify-between pb-1">
                 <span className="text-body font-medium text-muted-foreground">
-                  {t("empire:playerCountrySwitch")}
+                  {t($ => $.playerCountrySwitch, { ns: "empire" })}
                 </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger
@@ -431,8 +437,8 @@ export function SaveAndEmpirePage({
                       >
                         <User className="size-3" />
                         <span className="truncate">
-                          {t("empire:countryLabel", {
-                            id: state.selectedCountryId ?? playerCandidates[0]?.countryId,
+                          {t($ => $.countryLabel, { ns: "empire",
+                            id: state.selectedCountryId ?? playerCandidates[0]?.countryId ?? 0,
                           })}
                         </span>
                       </Button>
@@ -452,7 +458,7 @@ export function SaveAndEmpirePage({
                         className="justify-between"
                       >
                         <span>
-                          {t("empire:countryLabel", { id: candidate.countryId })}
+                          {t($ => $.countryLabel, { ns: "empire", id: candidate.countryId })}
                         </span>
                         {state.selectedCountryId === candidate.countryId && (
                           <Check className="size-3 stroke-[3] text-primary" />
@@ -467,34 +473,34 @@ export function SaveAndEmpirePage({
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div className="rounded-lg bg-surface p-2 text-center">
                 <div className="text-meta text-muted-foreground">
-                  {t("empire:metrics.authority")}
+                  {t($ => $.metrics.authority, { ns: "empire" })}
                 </div>
                 <div className="mt-0.5 truncate text-body font-semibold text-foreground">
-                  {snapshot.government.authority || t("empire:defaults.authority")}
+                  {snapshot.government.authority || t($ => $.defaults.authority, { ns: "empire" })}
                 </div>
               </div>
               <div className="rounded-lg bg-surface p-2 text-center">
                 <div className="text-meta text-muted-foreground">
-                  {t("empire:metrics.origin")}
+                  {t($ => $.metrics.origin, { ns: "empire" })}
                 </div>
                 <div className="mt-0.5 truncate text-body font-semibold text-foreground">
-                  {snapshot.government.origin || t("empire:defaults.origin")}
+                  {snapshot.government.origin || t($ => $.defaults.origin, { ns: "empire" })}
                 </div>
               </div>
               <div className="rounded-lg bg-surface p-2 text-center">
                 <div className="text-meta text-muted-foreground">
-                  {t("empire:metrics.species")}
+                  {t($ => $.metrics.species, { ns: "empire" })}
                 </div>
                 <div className="mt-0.5 truncate text-body font-semibold text-foreground">
-                  {snapshot.founderSpecies.archetype || t("empire:defaults.species")}
+                  {snapshot.founderSpecies.archetype || t($ => $.defaults.species, { ns: "empire" })}
                 </div>
               </div>
               <div className="rounded-lg bg-surface p-2 text-center">
                 <div className="text-meta text-muted-foreground">
-                  {t("empire:metrics.countryType")}
+                  {t($ => $.metrics.countryType, { ns: "empire" })}
                 </div>
                 <div className="mt-0.5 truncate text-body font-semibold text-foreground">
-                  {snapshot.countryType || t("empire:defaults.countryType")}
+                  {snapshot.countryType || t($ => $.defaults.countryType, { ns: "empire" })}
                 </div>
               </div>
             </div>
@@ -502,20 +508,20 @@ export function SaveAndEmpirePage({
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid h-8 w-full grid-cols-3 p-0.5">
                 <TabsTrigger value="civics" className="h-7 text-body">
-                  {t("empire:tabs.civics")}
+                  {t($ => $.tabs.civics, { ns: "empire" })}
                 </TabsTrigger>
                 <TabsTrigger value="traits" className="h-7 text-body">
-                  {t("empire:tabs.traits")}
+                  {t($ => $.tabs.traits, { ns: "empire" })}
                 </TabsTrigger>
                 <TabsTrigger value="ascension" className="h-7 text-body">
-                  {t("empire:tabs.ascension")}
+                  {t($ => $.tabs.ascension, { ns: "empire" })}
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="civics" className="space-y-2.5 pt-2">
                 <div className="space-y-1">
                   <div className="text-meta font-medium text-muted-foreground">
-                    {t("empire:sections.ethics")}
+                    {t($ => $.sections.ethics, { ns: "empire" })}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {snapshot.ethics.length > 0 ? (
@@ -531,7 +537,7 @@ export function SaveAndEmpirePage({
                       ))
                     ) : (
                       <span className="text-body text-muted-foreground">
-                        {t("empire:empty.ethics")}
+                        {t($ => $.empty.ethics, { ns: "empire" })}
                       </span>
                     )}
                   </div>
@@ -539,7 +545,7 @@ export function SaveAndEmpirePage({
 
                 <div className="space-y-1">
                   <div className="text-meta font-medium text-muted-foreground">
-                    {t("empire:sections.civics")}
+                    {t($ => $.sections.civics, { ns: "empire" })}
                   </div>
                   <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                     {snapshot.government.civics.length > 0 ? (
@@ -555,13 +561,13 @@ export function SaveAndEmpirePage({
                             variant="secondary"
                             className="h-4 shrink-0 px-1 text-meta"
                           >
-                            {t("empire:civicBadge")}
+                            {t($ => $.civicBadge, { ns: "empire" })}
                           </Badge>
                         </div>
                       ))
                     ) : (
                       <span className="text-body text-muted-foreground">
-                        {t("empire:empty.civics")}
+                        {t($ => $.empty.civics, { ns: "empire" })}
                       </span>
                     )}
                   </div>
@@ -570,7 +576,7 @@ export function SaveAndEmpirePage({
 
               <TabsContent value="traits" className="space-y-2 pt-2">
                 <div className="text-meta font-medium text-muted-foreground">
-                  {t("empire:sections.traits")}
+                  {t($ => $.sections.traits, { ns: "empire" })}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {snapshot.founderSpecies.traits.length > 0 ? (
@@ -579,7 +585,7 @@ export function SaveAndEmpirePage({
                     ))
                   ) : (
                     <span className="text-body text-muted-foreground">
-                      {t("empire:empty.traits")}
+                      {t($ => $.empty.traits, { ns: "empire" })}
                     </span>
                   )}
                 </div>
@@ -588,29 +594,29 @@ export function SaveAndEmpirePage({
               <TabsContent value="ascension" className="space-y-2.5 pt-2">
                 <div className="space-y-1">
                   <div className="text-meta font-medium text-muted-foreground">
-                    {t("empire:sections.ascensionPerks")}
+                    {t($ => $.sections.ascensionPerks, { ns: "empire" })}
                   </div>
                   <ExpandableIdList
                     items={snapshot.ascensionPerks}
-                    emptyText={t("empire:empty.ascensionPerks")}
+                    emptyText={t($ => $.empty.ascensionPerks, { ns: "empire" })}
                     showMoreLabel={(count) =>
-                      t("empire:showMore", { count })
+                      t($ => $.showMore, { ns: "empire", count })
                     }
-                    showLessLabel={t("empire:showLess")}
+                    showLessLabel={t($ => $.showLess, { ns: "empire" })}
                   />
                 </div>
 
                 <div className="space-y-1">
                   <div className="text-meta font-medium text-muted-foreground">
-                    {t("empire:sections.traditions")}
+                    {t($ => $.sections.traditions, { ns: "empire" })}
                   </div>
                   <ExpandableIdList
                     items={snapshot.traditions}
-                    emptyText={t("empire:empty.traditions")}
+                    emptyText={t($ => $.empty.traditions, { ns: "empire" })}
                     showMoreLabel={(count) =>
-                      t("empire:showMore", { count })
+                      t($ => $.showMore, { ns: "empire", count })
                     }
-                    showLessLabel={t("empire:showLess")}
+                    showLessLabel={t($ => $.showLess, { ns: "empire" })}
                   />
                 </div>
               </TabsContent>
@@ -618,7 +624,7 @@ export function SaveAndEmpirePage({
           </div>
         ) : (
           <div className="py-16 text-center text-body text-muted-foreground">
-            {t("empire:selectSaveHint")}
+            {t($ => $.selectSaveHint, { ns: "empire" })}
           </div>
         )}
       </Panel>

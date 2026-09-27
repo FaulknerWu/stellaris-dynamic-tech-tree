@@ -24,7 +24,6 @@
   },
   "settings": {
     "title": "Settings",
-    "uiLocale": "Interface Language",
     "theme": "Theme",
     "themeLight": "Light",
     "themeDark": "Dark",
@@ -32,7 +31,9 @@
     "about": "About DTT",
     "version": "Version",
     "license": "License",
-    "aboutText": "Dynamic Technology Tree is a desktop tool for computing and exporting technology dependency trees and localisation from Stellaris saves and active mods."
+    "aboutText": "Dynamic Technology Tree is a desktop tool for computing and exporting technology dependency trees and localisation from Stellaris saves and active mods.",
+    "localeSaveFailed": "Preferences could not be saved. Current choices remain active for this session.",
+    "localePreference": "Interface Language"
   },
   "wizard": {
     "ariaLabel": "Wizard steps"
@@ -47,5 +48,8 @@
   "status": {
     "ready": "Ready",
     "incomplete": "Incomplete"
-  }
+  },
+  "appTitle": "DTT — Dynamic Technology Tree",
+  "feedback": "Feedback: QQ group {{group}}",
+  "noDate": "No date"
 }

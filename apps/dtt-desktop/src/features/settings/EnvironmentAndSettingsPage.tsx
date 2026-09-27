@@ -25,7 +25,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { SessionAction, SessionState } from "@/app/session";
 import type {
-  SupportedLanguageDto,
+  GameLanguageDto,
   SwapUnknownStrategyDto,
   UnknownStrategyDto,
 } from "@/ipc/bindings";
@@ -38,18 +38,7 @@ interface EnvironmentAndSettingsPageProps {
   onRescanEnvironment: () => void;
 }
 
-const ALL_LANGUAGES: SupportedLanguageDto[] = [
-  "simp_chinese",
-  "english",
-  "french",
-  "german",
-  "spanish",
-  "russian",
-  "japanese",
-  "korean",
-  "polish",
-  "braz_por",
-];
+const ALL_LANGUAGES = ["english", "simp_chinese"] as const;
 
 const UNKNOWN_STRATEGY_KEYS: {
   id: UnknownStrategyDto;
@@ -160,7 +149,7 @@ export function EnvironmentAndSettingsPage({
     onResolveEnvironment(nextOverrides);
   };
 
-  const handleToggleLanguage = (lang: SupportedLanguageDto) => {
+  const handleToggleLanguage = (lang: GameLanguageDto) => {
     const current = state.settings.languages;
     if (current.includes(lang)) {
       if (current.length <= 1) {
@@ -202,9 +191,9 @@ export function EnvironmentAndSettingsPage({
   const isLauncherDbReady = !!effectiveLauncherDb && !state.environmentError;
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-1 gap-4 lg:grid-cols-2">
+    <div className="grid min-w-0 grid-cols-1 gap-4 lg:h-full lg:min-h-0 lg:grid-cols-2 [&>section]:h-auto lg:[&>section]:h-full">
       <Panel
-        title={t("environment:pathsTitle")}
+        title={t($ => $.pathsTitle, { ns: "environment" })}
         icon={Layers}
         action={
           <Button
@@ -215,7 +204,7 @@ export function EnvironmentAndSettingsPage({
             className="h-7 shrink-0 gap-1.5 text-body font-normal"
           >
             <RefreshCw className="size-3" />
-            <span>{t("common:actions.rescanEnvironment")}</span>
+            <span>{t($ => $.actions.rescanEnvironment, { ns: "common" })}</span>
           </Button>
         }
       >
@@ -227,9 +216,9 @@ export function EnvironmentAndSettingsPage({
 
         <div className="space-y-2.5">
           <PathRow
-            label={t("environment:paths.gameRoot")}
+            label={t($ => $.paths.gameRoot, { ns: "environment" })}
             value={effectiveGameRoot}
-            placeholder={t("environment:placeholders.gameRoot")}
+            placeholder={t($ => $.placeholders.gameRoot, { ns: "environment" })}
             ready={isGameRootReady}
             isOverridden={state.overrides.gameRoot !== null}
             onReset={() => handleResetPath("gameRoot")}
@@ -237,14 +226,14 @@ export function EnvironmentAndSettingsPage({
               handleBrowsePath(
                 "gameRoot",
                 "directory",
-                t("environment:dialog.selectGameRoot"),
+                t($ => $.dialog.selectGameRoot, { ns: "environment" }),
               )
             }
           />
           <PathRow
-            label={t("environment:paths.documentsDir")}
+            label={t($ => $.paths.documentsDir, { ns: "environment" })}
             value={effectiveDocsDir}
-            placeholder={t("environment:placeholders.documentsDir")}
+            placeholder={t($ => $.placeholders.documentsDir, { ns: "environment" })}
             ready={isDocsDirReady}
             isOverridden={state.overrides.documentsDir !== null}
             onReset={() => handleResetPath("documentsDir")}
@@ -252,14 +241,14 @@ export function EnvironmentAndSettingsPage({
               handleBrowsePath(
                 "documentsDir",
                 "directory",
-                t("environment:dialog.selectDocumentsDir"),
+                t($ => $.dialog.selectDocumentsDir, { ns: "environment" }),
               )
             }
           />
           <PathRow
-            label={t("environment:paths.launcherDb")}
+            label={t($ => $.paths.launcherDb, { ns: "environment" })}
             value={effectiveLauncherDb}
-            placeholder={t("environment:placeholders.launcherDb")}
+            placeholder={t($ => $.placeholders.launcherDb, { ns: "environment" })}
             ready={isLauncherDbReady}
             isOverridden={state.overrides.launcherDb !== null}
             onReset={() => handleResetPath("launcherDb")}
@@ -267,10 +256,10 @@ export function EnvironmentAndSettingsPage({
               handleBrowsePath(
                 "launcherDb",
                 "file",
-                t("environment:dialog.selectLauncherDb"),
+                t($ => $.dialog.selectLauncherDb, { ns: "environment" }),
                 [
                   {
-                    name: t("environment:dialog.sqliteFilter"),
+                    name: t($ => $.dialog.sqliteFilter, { ns: "environment" }),
                     extensions: ["sqlite", "db"],
                   },
                 ],
@@ -281,42 +270,42 @@ export function EnvironmentAndSettingsPage({
           <div className="space-y-1 rounded-lg bg-surface p-2.5">
             <div className="flex items-center justify-between">
               <span className="text-body font-medium text-foreground">
-                {t("environment:paths.outputDir")}
+                {t($ => $.paths.outputDir, { ns: "environment" })}
               </span>
               <Badge variant="secondary" className="h-4 text-meta font-normal">
-                {t("environment:outputDirBadge")}
+                {t($ => $.outputDirBadge, { ns: "environment" })}
               </Badge>
             </div>
             <Input
               readOnly
               value={outputDirectory}
-              placeholder={t("environment:placeholders.outputDir")}
+              placeholder={t($ => $.placeholders.outputDir, { ns: "environment" })}
               title={outputDirectory || undefined}
-              aria-label={t("environment:paths.outputDir")}
+              aria-label={t($ => $.paths.outputDir, { ns: "environment" })}
               className="h-7 bg-background font-mono text-meta text-info"
             />
           </div>
         </div>
       </Panel>
 
-      <Panel title={t("environment:settingsTitle")} icon={SlidersHorizontal}>
+      <Panel title={t($ => $.settingsTitle, { ns: "environment" })} icon={SlidersHorizontal}>
         <div className="space-y-3">
           <Field>
             <div className="flex items-center justify-between gap-2">
               <FieldTitle className="text-body text-foreground">
-                {t("generation:outputLanguages.title")}
+                {t($ => $.outputLanguages.title, { ns: "generation" })}
               </FieldTitle>
               <span className="text-meta text-muted-foreground">
-                {t("generation:outputLanguages.selectedCount", {
+                {t($ => $.outputLanguages.selectedCount, { ns: "generation",
                   count: state.settings.languages.length,
                 })}
               </span>
             </div>
             <FieldDescription className="text-meta">
-              {t("generation:outputLanguages.description")}
+              {t($ => $.outputLanguages.description, { ns: "generation" })}
             </FieldDescription>
 
-            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
               {ALL_LANGUAGES.map((lang) => {
                 const isChecked = state.settings.languages.includes(lang);
                 return (
@@ -336,7 +325,7 @@ export function EnvironmentAndSettingsPage({
                       className="sr-only absolute size-px overflow-hidden"
                     />
                     <span className="min-w-0 truncate text-center text-body font-medium leading-none">
-                      {t(`generation:outputLanguages.items.${lang}`)}
+                      {t($ => $.outputLanguages.items[lang], { ns: "generation" })}
                     </span>
                     {isChecked && (
                       <Check className="absolute right-1.5 size-3.5 shrink-0 stroke-[3] text-primary" />
@@ -348,17 +337,17 @@ export function EnvironmentAndSettingsPage({
 
             {minLangAlert ? (
               <FieldError className="text-meta animate-fadeIn">
-                {t("generation:outputLanguages.hint")}
+                {t($ => $.outputLanguages.hint, { ns: "generation" })}
               </FieldError>
             ) : null}
           </Field>
 
           <Field>
             <FieldTitle className="text-body text-foreground">
-              {t("generation:advanced.unknownStrategy.title")}
+              {t($ => $.advanced.unknownStrategy.title, { ns: "generation" })}
             </FieldTitle>
             <FieldDescription className="text-meta">
-              {t("generation:advanced.unknownStrategy.description")}
+              {t($ => $.advanced.unknownStrategy.description, { ns: "generation" })}
             </FieldDescription>
             <RadioGroup
               value={state.settings.unknownStrategy}
@@ -370,9 +359,7 @@ export function EnvironmentAndSettingsPage({
                   key={item.id}
                   value={item.id}
                   selected={state.settings.unknownStrategy === item.id}
-                  label={t(
-                    `generation:advanced.unknownStrategy.${item.key}.label`,
-                  )}
+                  label={t($ => $.advanced.unknownStrategy[item.key].label, { ns: "generation" })}
                 />
               ))}
             </RadioGroup>
@@ -380,10 +367,10 @@ export function EnvironmentAndSettingsPage({
 
           <Field>
             <FieldTitle className="text-body text-foreground">
-              {t("generation:advanced.swapUnknownStrategy.title")}
+              {t($ => $.advanced.swapUnknownStrategy.title, { ns: "generation" })}
             </FieldTitle>
             <FieldDescription className="text-meta">
-              {t("generation:advanced.swapUnknownStrategy.description")}
+              {t($ => $.advanced.swapUnknownStrategy.description, { ns: "generation" })}
             </FieldDescription>
             <RadioGroup
               value={state.settings.swapUnknownStrategy}
@@ -395,9 +382,7 @@ export function EnvironmentAndSettingsPage({
                   key={item.id}
                   value={item.id}
                   selected={state.settings.swapUnknownStrategy === item.id}
-                  label={t(
-                    `generation:advanced.swapUnknownStrategy.${item.key}.label`,
-                  )}
+                  label={t($ => $.advanced.swapUnknownStrategy[item.key].label, { ns: "generation" })}
                 />
               ))}
             </RadioGroup>
@@ -465,14 +450,14 @@ function PathRow({
           <span className="text-body font-medium text-foreground">{label}</span>
           {ready ? (
             <Badge variant="success" className="h-4 px-1.5 text-meta font-normal">
-              {t("status.ready")}
+              {t($ => $.status.ready)}
             </Badge>
           ) : (
             <Badge
               variant="destructive"
               className="h-4 px-1.5 text-meta font-normal"
             >
-              {t("status.incomplete")}
+              {t($ => $.status.incomplete)}
             </Badge>
           )}
         </div>
@@ -485,10 +470,10 @@ function PathRow({
               size="sm"
               onClick={onReset}
               className="h-6 gap-1 px-1.5 text-meta text-muted-foreground hover:text-foreground"
-              title={t("actions.reset")}
+              title={t($ => $.actions.reset)}
             >
               <RotateCcw className="size-3" />
-              <span>{t("actions.restore")}</span>
+              <span>{t($ => $.actions.restore)}</span>
             </Button>
           )}
           <Button
@@ -499,7 +484,7 @@ function PathRow({
             className="h-6 gap-1 px-2 text-meta"
           >
             <Pencil className="size-3" />
-            <span>{t("actions.modify")}</span>
+            <span>{t($ => $.actions.modify)}</span>
           </Button>
         </div>
       </div>

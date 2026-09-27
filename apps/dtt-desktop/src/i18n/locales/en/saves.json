@@ -7,7 +7,6 @@
   "manualSelect": "Select Save from File...",
   "libraryTitle": "Save Library",
   "empireTitle": "Empire Inspection",
-  "availableCount": "{{count}} available saves",
   "manualSelectFile": "Choose .sav file",
   "listAriaLabel": "Save list",
   "gameDate": "In-game date: {{date}}",
@@ -34,5 +33,16 @@
       "title": "No cloud saves found",
       "description": "No Steam cloud saves detected or Steam library list is empty. Please verify Steam Cloud synchronization."
     }
+  },
+  "availableCount_other": "{{count, number}} available saves",
+  "availableCount_one": "{{count, number}} available save",
+  "scanFailures": {
+    "steam_users": "Cannot read Steam user directory: {{path}}",
+    "steam_user_entry": "Cannot read Steam user entry: {{path}}",
+    "save_root": "Cannot read save directory: {{path}}",
+    "campaign_entry": "Cannot read campaign entry: {{path}}",
+    "campaign": "Cannot read campaign directory: {{path}}",
+    "save_entry": "Cannot read save entry: {{path}}",
+    "file_metadata": "Cannot read save attributes: {{path}}"
   }
 }

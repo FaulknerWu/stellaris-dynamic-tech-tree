@@ -1,3 +1,5 @@
+import { useLocale } from "@/i18n/controller";
+import { numberFormatter } from "@/i18n/format";
 import React from "react";
 
 import { cn } from "@/lib/utils";
@@ -17,6 +19,7 @@ export function StatCard({
   icon,
   className,
 }: StatCardProps) {
+  const { resolvedLocale } = useLocale();
   return (
     <div className={cn("rounded-lg bg-surface p-4", className)}>
       <div className="flex items-center justify-between">
@@ -24,7 +27,7 @@ export function StatCard({
         {icon && <div className="text-muted-foreground">{icon}</div>}
       </div>
       <div className="mt-2 text-2xl font-semibold tracking-tight tabular-nums text-foreground">
-        {value}
+        {typeof value === "number" ? numberFormatter(resolvedLocale).format(value) : value}
       </div>
       {description && (
         <p className="mt-1 text-meta text-muted-foreground">{description}</p>

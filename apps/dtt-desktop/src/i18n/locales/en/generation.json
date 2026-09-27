@@ -3,19 +3,12 @@
     "title": "Output Languages",
     "description": "These are the localization languages written into the mod, unrelated to the app's interface language.",
     "hint": "Please select at least one output language",
-    "selectedCount": "{{count}} languages selected",
     "items": {
       "english": "English",
-      "simp_chinese": "Simplified Chinese",
-      "french": "French",
-      "german": "German",
-      "spanish": "Spanish",
-      "russian": "Russian",
-      "korean": "Korean",
-      "japanese": "Japanese",
-      "polish": "Polish",
-      "braz_por": "Brazilian Portuguese"
-    }
+      "simp_chinese": "Simplified Chinese"
+    },
+    "selectedCount_other": "{{count, number}} languages selected",
+    "selectedCount_one": "{{count, number}} language selected"
   },
   "advanced": {
     "unknownStrategy": {

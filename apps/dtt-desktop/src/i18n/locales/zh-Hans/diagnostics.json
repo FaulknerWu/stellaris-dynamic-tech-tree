@@ -1,0 +1,60 @@
+{
+  "missing_mod_descriptor": "{{name}} 缺少 descriptor.mod；继续加载 MOD，但不应用该文件中的 replace_path 规则。",
+  "game_data": "游戏数据诊断：{{source}} / {{subject}} / {{category}} / {{reason}} / {{offset}}",
+  "unhandled_definition": "{{technology}}（{{source}}）有未处理字段：{{items}}",
+  "localisation": "本地化读取失败：{{language}} / {{source}} / {{path}} / {{reason}}",
+  "self_reference": "自引用：{{technology}}",
+  "cycle": "依赖环：{{items}}",
+  "write_failed": "{{operation}}失败：{{path}}",
+  "operations": {
+    "write": "写入",
+    "remove": "删除",
+    "format": "格式化"
+  },
+  "unknown_condition_other": "未知条件 {{name}}：出现 {{count, number}} 次；影响科技：{{items}}",
+  "deferred_condition_other": "过程性条件 {{name}}：出现 {{count, number}} 次；影响科技：{{items}}",
+  "issues": {
+    "invalid_utf8": "文件不是有效的 UTF-8。",
+    "invalid_syntax": "Clausewitz 语法错误。",
+    "expected_scalar": "此处需要标量值。",
+    "expected_object": "此处需要对象。",
+    "invalid_field": "缺少或无效的字段：{{field}}。",
+    "overwritten": "定义已被当前数据源覆盖。先前来源：{{previous}}。",
+    "inline_cycle": "内联脚本存在循环引用：{{script}}。",
+    "inline_missing": "找不到内联脚本：{{script}}。",
+    "invalid_inline_call": "inline_script 必须是路径或含 script 字段的对象。",
+    "isolated_branch": "孤立的 else_if 或 else 无法可靠转换。",
+    "invalid_condition": "条件结构无法转换。",
+    "malformed_argument": "触发器参数无法解析。",
+    "structured_argument": "嵌套触发器参数尚无对应的解释器。",
+    "duplicate_parameter": "重复参数导致无法可靠求值。",
+    "invalid_swap": "跳过替换变体 {{index}}：缺少或无效的 {{field}}。",
+    "duplicate_field": "重复字段 {{field}}；只读取第一处，游戏合并规则尚未核实。",
+    "field_case": "字段 {{field}} 与 {{expected}} 大小写不同；不自动转换。"
+  },
+  "conditions": {
+    "trigger": "未识别的触发器",
+    "operator": "不支持的比较运算符",
+    "malformed_argument": "触发器参数无效",
+    "structured_argument": "尚不支持的结构化参数",
+    "missing_previous_scope": "没有对应的前序作用域",
+    "missing_event_source": "科技条件入口没有事件来源对象",
+    "missing_founder_species": "未提取到创始物种对象",
+    "unknown_species_relation": "物种关系尚未核实",
+    "unknown_owner": "无法确定唯一所属国家",
+    "unknown_trigger": "未识别触发器；保留不确定性",
+    "expected_scalar": "身份条件需要标量参数",
+    "unbound_argument": "参数为空或变量未绑定",
+    "invalid_boolean": "布尔条件需要 yes 或 no",
+    "missing_identity": "开局身份数据缺失或无法解析",
+    "unverified_structure": "条件结构尚未核实",
+    "unknown_scope": "无法解析作用域引用",
+    "unknown_collection": "集合类型或来源未知",
+    "recursive_script": "脚本触发器循环引用",
+    "type_mismatch": "目标类型不匹配"
+  },
+  "localisationReasons": {
+    "invalid_utf8": "文件不是有效的 UTF-8。",
+    "read_failed": "无法读取文件。"
+  }
+}

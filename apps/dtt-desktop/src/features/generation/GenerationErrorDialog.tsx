@@ -1,3 +1,4 @@
+import { errorTitle } from "@/i18n/messages";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AlertCircle, Copy } from "lucide-react";
@@ -22,11 +23,11 @@ export function GenerationErrorDialog({ error, onReturn }: GenerationErrorDialog
   const { t } = useTranslation("generation");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied" | "failed">("idle");
   const report = [
-    t("failure.title"),
-    `${t("failure.code")}: ${error.code}`,
-    `${t("failure.message")}: ${error.message}`,
-    error.context?.path ? `${t("failure.path")}: ${error.context.path}` : null,
-    error.detail ? `${t("failure.detail")}:\n${error.detail}` : null,
+    t($ => $.failure.title),
+    `${t($ => $.failure.code)}: ${error.code}`,
+    `${t($ => $.failure.message)}: ${errorTitle(error)}`,
+    error.context?.path ? `${t($ => $.failure.path)}: ${error.context.path}` : null,
+    error.technicalDetail ? `${t($ => $.failure.detail)}:\n${error.technicalDetail}` : null,
   ].filter((part) => part !== null).join("\n\n");
 
   async function copyReport() {
@@ -45,23 +46,23 @@ export function GenerationErrorDialog({ error, onReturn }: GenerationErrorDialog
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertCircle className="size-5 text-destructive" />
-            {t("failure.title")}
+            {t($ => $.failure.title)}
           </AlertDialogTitle>
-          <AlertDialogDescription>{t("failure.description")}</AlertDialogDescription>
+          <AlertDialogDescription>{t($ => $.failure.description)}</AlertDialogDescription>
         </AlertDialogHeader>
         <pre tabIndex={0} className="max-h-[45vh] overflow-auto whitespace-pre-wrap break-words rounded border border-border-subtle bg-surface p-3 font-mono text-meta select-text">
           {report}
         </pre>
         <p role="status" aria-live="polite" className="text-body text-muted-foreground">
-          {copyStatus === "copied" ? t("failure.copied") : copyStatus === "failed" ? t("failure.copyFailed") : null}
+          {copyStatus === "copied" ? t($ => $.failure.copied) : copyStatus === "failed" ? t($ => $.failure.copyFailed) : null}
         </p>
         <AlertDialogFooter>
           <Button type="button" variant="outline" onClick={onReturn}>
-            {t("failure.return")}
+            {t($ => $.failure.return)}
           </Button>
           <Button type="button" disabled={copyStatus === "copying"} onClick={copyReport}>
             <Copy className="size-4" />
-            {t("failure.copy")}
+            {t($ => $.failure.copy)}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

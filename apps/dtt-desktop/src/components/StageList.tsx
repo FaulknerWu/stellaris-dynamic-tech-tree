@@ -56,7 +56,7 @@ export function StageList({ currentStage, isCancelling }: StageListProps) {
                 <Circle className="size-2.5 text-muted-foreground stroke-[2]" />
               )}
             </div>
-            <span>{t(`stages.${stage}`)}</span>
+            <span>{t($ => $.stages[stage])}</span>
           </div>
         );
       })}

@@ -36,6 +36,7 @@
   "playerCountrySwitch": "Player country",
   "selectSaveHint": "Select a valid non-ironman text save from the list on the left",
   "detail": "Details",
-  "showMore": "Show {{count}} more",
-  "showLess": "Show less"
+  "showLess": "Show less",
+  "showMore_other": "Show {{count, number}} more",
+  "showMore_one": "Show {{count, number}} more"
 }
