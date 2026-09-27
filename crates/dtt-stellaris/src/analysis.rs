@@ -1,3 +1,4 @@
+use dtt_core::condition::ContextReason;
 use dtt_core::condition::{
     EvaluationContext, GraphicalCultures, Predicate, PredicateEvaluation, ScopeEvaluation,
     UnknownConditionReason,
@@ -38,17 +39,12 @@ impl<'a> World<'a> {
 }
 
 impl AnalysisContext<'_> {
-    fn unknown(&self, trigger: &str, detail: impl Into<String>) -> PredicateEvaluation {
-        let mut detail = detail.into();
-        if !self.path.is_empty() {
-            detail.push_str(&format!("；作用域路径：{}", self.path.join(" → ")));
-        }
-        if !self.calls.is_empty() {
-            detail.push_str(&format!("；脚本调用：{}", self.calls.join(" → ")));
-        }
+    fn unknown(&self, trigger: &str, reason: ContextReason) -> PredicateEvaluation {
         PredicateEvaluation::unknown(UnknownConditionReason::Context {
             trigger: trigger.into(),
-            detail,
+            reason,
+            scope_path: self.path.clone(),
+            calls: self.calls.clone(),
         })
     }
 

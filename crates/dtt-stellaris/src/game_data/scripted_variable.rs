@@ -1,3 +1,4 @@
+use crate::game_data::DefinitionIssue;
 use std::collections::HashMap;
 
 use crate::clausewitz::{ClausewitzDocument, read_scalar};
@@ -52,7 +53,7 @@ fn collect_variables(
                 source,
                 GameDataCategory::ScriptedVariable,
                 variable_name,
-                format!("脚本变量 `@{variable_name}` 的值不是标量"),
+                DefinitionIssue::ExpectedScalar,
             )),
         }
     }

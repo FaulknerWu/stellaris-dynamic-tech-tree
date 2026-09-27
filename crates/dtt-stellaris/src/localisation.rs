@@ -52,11 +52,18 @@ impl LocalisationSet {
         }
     }
 
-    fn push_diagnostic(&mut self, source: &str, path: &Path, message: String) {
+    fn push_diagnostic(
+        &mut self,
+        source: &str,
+        path: &Path,
+        kind: LocalisationFailureKind,
+        technical_detail: String,
+    ) {
         self.diagnostics.push(LocalisationDiagnostic {
             source: source.to_string(),
             path: path.to_string_lossy().into_owned(),
-            message,
+            kind,
+            technical_detail,
         });
     }
 }
@@ -65,7 +72,8 @@ impl LocalisationSet {
 pub struct LocalisationDiagnostic {
     pub source: String,
     pub path: String,
-    pub message: String,
+    pub kind: LocalisationFailureKind,
+    pub technical_detail: String,
 }
 
 fn localisation_ids_from_technologies(technologies: &Catalog) -> HashSet<Id> {
@@ -133,13 +141,15 @@ fn ingest_phase(
                 Err(error) => set.push_diagnostic(
                     &source_label,
                     diagnostic_path,
-                    format!("Localisation file is not valid UTF-8: {error}"),
+                    LocalisationFailureKind::InvalidUtf8,
+                    error.to_string(),
                 ),
             },
             Err(error) => set.push_diagnostic(
                 &source_label,
                 diagnostic_path,
-                format!("Failed to read localisation file: {error}"),
+                LocalisationFailureKind::ReadFailed,
+                error.to_string(),
             ),
         }
     }
@@ -182,4 +192,11 @@ fn is_language_yml(path: &Path, language: &str) -> bool {
             .is_some_and(|name| {
                 name == format!("l_{language}.yml") || name.ends_with(&format!("_l_{language}.yml"))
             })
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum LocalisationFailureKind {
+    InvalidUtf8,
+    ReadFailed,
 }

@@ -5,7 +5,10 @@ mod snapshot;
 
 pub(crate) use container::index;
 pub use container::open;
-pub use library::{SaveScanDiagnostic, SaveScanResult, ScannedSave, scan_cloud, scan_local};
+pub use library::{
+    SaveScanDiagnostic, SaveScanFailureKind, SaveScanResult, SaveUnavailableReason, ScannedSave,
+    scan_cloud, scan_local,
+};
 pub use metadata::SaveMetadata;
 pub use snapshot::{
     PlayerCountryCandidate, extract_snapshot_for_country, player_country_candidates,

@@ -142,7 +142,9 @@ fn lower_scripted(
     if !ctx.stack.insert(name.to_string()) {
         return Condition::Unknown(UnknownConditionReason::Context {
             trigger: name.to_string(),
-            detail: "脚本触发器循环引用".into(),
+            reason: dtt_core::condition::ContextReason::RecursiveScript,
+            scope_path: Vec::new(),
+            calls: Vec::new(),
         });
     }
     let previous = std::mem::replace(&mut ctx.parameters, provided);

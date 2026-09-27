@@ -1,3 +1,4 @@
+use dtt_core::condition::ContextReason;
 use dtt_core::condition::{
     ComparisonOperator, Predicate, PredicateArgument, PredicateEvaluation, UnknownConditionReason,
 };
@@ -28,7 +29,7 @@ pub(super) fn evaluate(
                 keys: keys.clone(),
             })
         }
-        _ => context.unknown(name, "触发器未被识别，保留不确定性"),
+        _ => context.unknown(name, ContextReason::UnknownTrigger),
     }
 }
 
@@ -63,14 +64,14 @@ fn opening(predicate: &Predicate, context: &AnalysisContext<'_>) -> PredicateEva
         });
     }
     let PredicateArgument::Scalar(value) = &predicate.argument else {
-        return context.unknown(name, "身份条件需要标量参数");
+        return context.unknown(name, ContextReason::ExpectedScalar);
     };
     if value.is_empty() || value.starts_with('@') || value.contains('$') {
-        return context.unknown(name, "身份条件的参数为空或仍有未绑定变量");
+        return context.unknown(name, ContextReason::UnboundArgument);
     }
     let flag = matches!(name, "always" | "is_ai" | "is_nomadic");
     if flag && !matches!(value.as_str(), "yes" | "no") {
-        return context.unknown(name, "布尔条件只能使用 yes 或 no");
+        return context.unknown(name, ContextReason::InvalidBoolean);
     }
     let negated = (predicate.operator == ComparisonOperator::NotEqual) ^ (flag && value == "no");
     if name == "always" {
@@ -84,10 +85,10 @@ fn opening(predicate: &Predicate, context: &AnalysisContext<'_>) -> PredicateEva
     if context.current.kind() != Some(expected) {
         return context.unknown(
             name,
-            format!(
-                "目标类型不匹配：需要 {expected:?}，当前为 {:?}",
-                context.current.kind()
-            ),
+            ContextReason::TypeMismatch {
+                expected: format!("{expected:?}"),
+                actual: context.current.kind().map(|kind| format!("{kind:?}")),
+            },
         );
     }
     match &context.current {
@@ -140,7 +141,7 @@ fn opening(predicate: &Predicate, context: &AnalysisContext<'_>) -> PredicateEva
     };
     match found {
         Some(found) => PredicateEvaluation::fixed(found ^ negated),
-        None => context.unknown(name, "开局身份数据未提取或无法解析，不能按不满足处理"),
+        None => context.unknown(name, ContextReason::MissingIdentity),
     }
 }
 
@@ -188,7 +189,13 @@ fn process(predicate: &Predicate, context: &AnalysisContext<'_>) -> PredicateEva
     if let Some(expected) = expected
         && context.current.kind() != Some(expected)
     {
-        return context.unknown(name, format!("过程条件的目标类型不匹配：需要 {expected:?}"));
+        return context.unknown(
+            name,
+            ContextReason::TypeMismatch {
+                expected: format!("{expected:?}"),
+                actual: context.current.kind().map(|kind| format!("{kind:?}")),
+            },
+        );
     }
     if let ObjectRef::Unresolved { reason, .. } = &context.current {
         return context.unknown(name, reason.clone());
@@ -206,7 +213,7 @@ fn process(predicate: &Predicate, context: &AnalysisContext<'_>) -> PredicateEva
         _ => false,
     };
     if !valid_argument {
-        return context.unknown(name, "过程条件的参数结构未能确认，不能直接放宽");
+        return context.unknown(name, ContextReason::UnverifiedStructure);
     }
     if !matches!(
         predicate.operator,

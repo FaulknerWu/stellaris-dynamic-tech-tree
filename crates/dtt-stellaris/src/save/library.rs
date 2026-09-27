@@ -18,13 +18,14 @@ pub struct ScannedSave {
     pub modified_at_millis: u64,
     pub file_size: u64,
     pub gamestate_kind: Option<GamestateKind>,
-    pub unavailable_reason: Option<String>,
+    pub unavailable_reason: Option<SaveUnavailableReason>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct SaveScanDiagnostic {
     pub path: PathBuf,
-    pub message: String,
+    pub kind: SaveScanFailureKind,
+    pub technical_detail: String,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -49,7 +50,8 @@ pub fn scan_cloud(steam_libraries: &[PathBuf]) -> SaveScanResult {
             Err(error) => {
                 result.diagnostics.push(SaveScanDiagnostic {
                     path: userdata_dir,
-                    message: format!("无法读取 Steam 用户目录：{error}"),
+                    kind: SaveScanFailureKind::SteamUsers,
+                    technical_detail: error.to_string(),
                 });
                 continue;
             }
@@ -60,7 +62,8 @@ pub fn scan_cloud(steam_libraries: &[PathBuf]) -> SaveScanResult {
                 Err(error) => {
                     result.diagnostics.push(SaveScanDiagnostic {
                         path: userdata_dir.clone(),
-                        message: format!("无法读取 Steam 用户目录项：{error}"),
+                        kind: SaveScanFailureKind::SteamUserEntry,
+                        technical_detail: error.to_string(),
                     });
                     continue;
                 }
@@ -96,7 +99,8 @@ fn scan_save_root(save_root: &Path, steam_user_id: Option<String>) -> SaveScanRe
         Err(error) => {
             result.diagnostics.push(SaveScanDiagnostic {
                 path: save_root.to_path_buf(),
-                message: format!("无法读取存档根目录：{error}"),
+                kind: SaveScanFailureKind::SaveRoot,
+                technical_detail: error.to_string(),
             });
             return result;
         }
@@ -108,7 +112,8 @@ fn scan_save_root(save_root: &Path, steam_user_id: Option<String>) -> SaveScanRe
             Err(error) => {
                 result.diagnostics.push(SaveScanDiagnostic {
                     path: save_root.to_path_buf(),
-                    message: format!("无法读取战役目录项：{error}"),
+                    kind: SaveScanFailureKind::CampaignEntry,
+                    technical_detail: error.to_string(),
                 });
                 continue;
             }
@@ -141,7 +146,8 @@ fn scan_campaign(
         Err(error) => {
             result.diagnostics.push(SaveScanDiagnostic {
                 path: campaign_dir.to_path_buf(),
-                message: format!("无法读取战役目录：{error}"),
+                kind: SaveScanFailureKind::Campaign,
+                technical_detail: error.to_string(),
             });
             return;
         }
@@ -153,7 +159,8 @@ fn scan_campaign(
             Err(error) => {
                 result.diagnostics.push(SaveScanDiagnostic {
                     path: campaign_dir.to_path_buf(),
-                    message: format!("无法读取存档目录项：{error}"),
+                    kind: SaveScanFailureKind::SaveEntry,
+                    technical_detail: error.to_string(),
                 });
                 continue;
             }
@@ -174,7 +181,8 @@ fn scan_campaign(
             Err(error) => {
                 result.diagnostics.push(SaveScanDiagnostic {
                     path,
-                    message: format!("无法读取存档文件属性：{error}"),
+                    kind: SaveScanFailureKind::FileMetadata,
+                    technical_detail: error.to_string(),
                 });
                 continue;
             }
@@ -189,10 +197,16 @@ fn scan_campaign(
         let (metadata, gamestate_kind, unavailable_reason) = match index(&path) {
             Ok(index) => {
                 let reason = matches!(index.gamestate_kind, GamestateKind::Binary)
-                    .then(|| "二进制或铁人存档暂不支持".to_string());
+                    .then_some(SaveUnavailableReason::Binary);
                 (Some(index.metadata), Some(index.gamestate_kind), reason)
             }
-            Err(error) => (None, None, Some(error.to_string())),
+            Err(error) => (
+                None,
+                None,
+                Some(SaveUnavailableReason::Corrupt {
+                    technical_detail: error.to_string(),
+                }),
+            ),
         };
         result.saves.push(ScannedSave {
             path,
@@ -206,4 +220,22 @@ fn scan_campaign(
             unavailable_reason,
         });
     }
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum SaveUnavailableReason {
+    Binary,
+    Corrupt { technical_detail: String },
+}
+#[derive(Debug, Clone, Copy, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SaveScanFailureKind {
+    SteamUsers,
+    SteamUserEntry,
+    SaveRoot,
+    CampaignEntry,
+    Campaign,
+    SaveEntry,
+    FileMetadata,
 }

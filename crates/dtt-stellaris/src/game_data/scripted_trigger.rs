@@ -1,3 +1,4 @@
+use crate::game_data::DefinitionIssue;
 use std::collections::{HashMap, HashSet};
 
 use crate::clausewitz::ClausewitzDocument;
@@ -68,7 +69,7 @@ fn collect_definitions(
                 &source,
                 GameDataCategory::ScriptedTrigger,
                 &field.key,
-                format!("脚本触发器 `{}` 的值不是对象", field.key),
+                DefinitionIssue::ExpectedObject,
             ));
             continue;
         };
@@ -91,10 +92,7 @@ fn collect_definitions(
                         &source,
                         GameDataCategory::ScriptedTrigger,
                         &field.key,
-                        format!(
-                            "脚本触发器 `{}` 被后续数据源覆盖，最终采用 `{source}`",
-                            field.key
-                        ),
+                        DefinitionIssue::Overwritten { previous: None },
                     ));
                 }
             }
@@ -102,7 +100,7 @@ fn collect_definitions(
                 &source,
                 GameDataCategory::ScriptedTrigger,
                 &field.key,
-                condition_error_message(error, &field.key),
+                condition_issue(error, &field.key),
             )),
         }
     }
@@ -127,18 +125,19 @@ pub(super) fn script_notes(
                 }
                 ScriptNoteKind::DuplicateParameter => GameDataDiagnosticKind::DuplicateParameter,
             },
-            message: note.message,
+            issue: match note.kind {
+                ScriptNoteKind::MalformedArgument => DefinitionIssue::MalformedArgument,
+                ScriptNoteKind::StructuredArgument => DefinitionIssue::StructuredArgument,
+                ScriptNoteKind::DuplicateParameter => DefinitionIssue::DuplicateParameter,
+            },
+            technical_detail: None,
         })
         .collect()
 }
 
-pub(super) fn condition_error_message(error: ScriptError, subject: &str) -> String {
+pub(super) fn condition_issue(error: ScriptError, _subject: &str) -> DefinitionIssue {
     match error {
-        ScriptError::IsolatedBranch => {
-            format!("`{subject}` 的条件含有孤立的 else_if 或 else，无法可靠转换")
-        }
-        ScriptError::InvalidValue => {
-            format!("`{subject}` 的条件含有无法转换的结构")
-        }
+        ScriptError::IsolatedBranch => DefinitionIssue::IsolatedBranch,
+        ScriptError::InvalidValue => DefinitionIssue::InvalidCondition,
     }
 }

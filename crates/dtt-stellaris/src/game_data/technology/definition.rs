@@ -1,3 +1,4 @@
+use crate::game_data::DefinitionIssue;
 use std::collections::HashSet;
 
 use dtt_core::condition::CompiledCondition;
@@ -8,7 +9,7 @@ use crate::clausewitz::value::{CwEntry, CwObject, CwValue, resolve_at_variable};
 
 use super::super::diagnostic::{GameDataCategory, GameDataDiagnostic, definition_diagnostic};
 use super::super::lower::{LowerInputs, lower_script};
-use super::super::scripted_trigger::{condition_error_message, script_notes};
+use super::super::scripted_trigger::{condition_issue, script_notes};
 
 const CONSUMED_KEYS: &[&str] = &[
     "area",
@@ -68,7 +69,9 @@ pub(super) fn extract(
             source,
             GameDataCategory::Technology,
             name,
-            format!("科技 `{name}` 缺少有效的 area 字段"),
+            DefinitionIssue::InvalidField {
+                field: "area".into(),
+            },
         ));
         return None;
     };
@@ -78,7 +81,9 @@ pub(super) fn extract(
             source,
             GameDataCategory::Technology,
             name,
-            format!("科技 `{name}` 缺少有效的 tier 字段"),
+            DefinitionIssue::InvalidField {
+                field: "tier".into(),
+            },
         ));
         return None;
     };
@@ -92,7 +97,7 @@ pub(super) fn extract(
                 source,
                 GameDataCategory::Technology,
                 name,
-                condition_error_message(error, name),
+                condition_issue(error, name),
             ));
             return None;
         }
@@ -255,7 +260,10 @@ fn swaps_from(
                 source,
                 GameDataCategory::Technology,
                 tech_name,
-                format!("科技 `{tech_name}` 的 technology_swap[{index}] 不是对象"),
+                DefinitionIssue::InvalidSwap {
+                    index,
+                    field: "technology_swap".into(),
+                },
             ));
             continue;
         };
@@ -264,7 +272,10 @@ fn swaps_from(
                 source,
                 GameDataCategory::Technology,
                 tech_name,
-                format!("科技 `{tech_name}` 的 technology_swap[{index}] 缺少 name"),
+                DefinitionIssue::InvalidSwap {
+                    index,
+                    field: "name".into(),
+                },
             ));
             continue;
         };
@@ -276,9 +287,10 @@ fn swaps_from(
                         source,
                         GameDataCategory::Technology,
                         tech_name,
-                        format!(
-                            "科技 `{tech_name}` 的 technology_swap[{index}] 的 trigger 不是对象"
-                        ),
+                        DefinitionIssue::InvalidSwap {
+                            index,
+                            field: "trigger".into(),
+                        },
                     ));
                     continue;
                 };
@@ -297,7 +309,7 @@ fn swaps_from(
                             source,
                             GameDataCategory::Technology,
                             tech_name,
-                            condition_error_message(error, tech_name),
+                            condition_issue(error, tech_name),
                         ));
                         continue;
                     }
@@ -316,7 +328,10 @@ fn swaps_from(
                         source,
                         GameDataCategory::Technology,
                         tech_name,
-                        format!("科技 `{tech_name}` 的 technology_swap[{index}] 含有无效的 area 字段，跳过该变体"),
+                        DefinitionIssue::InvalidSwap {
+                            index,
+                            field: "area".into(),
+                        },
                     ));
                     continue;
                 }
@@ -350,7 +365,9 @@ fn diagnose_fields(
                     source,
                     GameDataCategory::Technology,
                     name,
-                    format!("科技 `{name}` 重复声明字段 `{}`；当前仅读取第一处，游戏的合并或覆盖语义尚未核实", field.key),
+                    DefinitionIssue::DuplicateField {
+                        field: field.key.clone(),
+                    },
                 ));
             }
         } else if !RECOGNIZED_IGNORED_KEYS.contains(&field.key.as_str())
@@ -363,7 +380,10 @@ fn diagnose_fields(
                 source,
                 GameDataCategory::Technology,
                 name,
-                format!("科技 `{name}` 的字段 `{}` 与已识别字段 `{expected}` 大小写不同；当前不自动转换，游戏的大小写规则尚未核实", field.key),
+                DefinitionIssue::FieldCase {
+                    field: field.key.clone(),
+                    expected: expected.to_string(),
+                },
             ));
         }
     }

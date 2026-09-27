@@ -1,3 +1,4 @@
+use crate::game_data::DefinitionIssue;
 use std::collections::{HashMap, HashSet};
 
 use dtt_core::technology::{Catalog, Id};
@@ -80,7 +81,7 @@ fn collect_technologies(
                     source,
                     GameDataCategory::Technology,
                     variable_name,
-                    format!("脚本变量 `@{variable_name}` 的值不是标量"),
+                    DefinitionIssue::ExpectedScalar,
                 )),
             }
             continue;
@@ -91,7 +92,7 @@ fn collect_technologies(
                 source,
                 GameDataCategory::Technology,
                 &field.key,
-                format!("科技 `{}` 的值不是对象", field.key),
+                DefinitionIssue::ExpectedObject,
             ));
             continue;
         };
@@ -122,7 +123,9 @@ fn collect_technologies(
                     source,
                     GameDataCategory::Technology,
                     id.as_str(),
-                    format!("科技 `{id}` 被 `{previous}` 定义，现由 `{source}` 覆盖"),
+                    DefinitionIssue::Overwritten {
+                        previous: Some(previous.to_string()),
+                    },
                 ));
             }
             ingest.metadata.insert(

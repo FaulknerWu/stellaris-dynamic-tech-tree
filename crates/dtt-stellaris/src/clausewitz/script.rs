@@ -59,7 +59,6 @@ pub(crate) struct ScriptConversion {
 pub(crate) struct ScriptNote {
     pub kind: ScriptNoteKind,
     pub trigger: String,
-    pub message: String,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -370,21 +369,9 @@ fn object_argument(trigger: &str, object: &CwObject, ctx: &mut ConversionCtx) ->
 }
 
 fn script_note(kind: ScriptNoteKind, trigger: &str) -> ScriptNote {
-    let message = match kind {
-        ScriptNoteKind::MalformedArgument => {
-            format!("触发器 `{trigger}` 的参数无法解析")
-        }
-        ScriptNoteKind::StructuredArgument => {
-            format!("触发器 `{trigger}` 的参数是嵌套块，尚无对应的结构化谓词解释器")
-        }
-        ScriptNoteKind::DuplicateParameter => {
-            format!("触发器 `{trigger}` 含有重复参数，无法可靠求值")
-        }
-    };
     ScriptNote {
         kind,
         trigger: trigger.to_string(),
-        message,
     }
 }
 

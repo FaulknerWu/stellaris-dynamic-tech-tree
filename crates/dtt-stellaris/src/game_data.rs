@@ -14,7 +14,9 @@ mod scripted_trigger;
 mod scripted_variable;
 mod technology;
 
-pub use diagnostic::{GameDataCategory, GameDataDiagnostic, GameDataDiagnosticKind, Ingested};
+pub use diagnostic::{
+    DefinitionIssue, GameDataCategory, GameDataDiagnostic, GameDataDiagnosticKind, Ingested,
+};
 pub use technology::{TechnologyIngest, TechnologySourceMetadata};
 
 use graphical_culture::ingest_graphical_cultures;

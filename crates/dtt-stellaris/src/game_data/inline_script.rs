@@ -1,3 +1,4 @@
+use crate::game_data::DefinitionIssue;
 use std::collections::{HashMap, HashSet};
 
 use crate::clausewitz::ClausewitzDocument;
@@ -37,7 +38,7 @@ pub(crate) fn ingest_inline_scripts(manifest: &Manifest) -> Result<Ingested<Inli
                         file.provenance(),
                         GameDataCategory::InlineScript,
                         &key,
-                        format!("inline_script `{key}` 被后续数据源覆盖"),
+                        DefinitionIssue::Overwritten { previous: None },
                     ));
                 }
             }
@@ -120,7 +121,7 @@ fn expand_field(
             source,
             GameDataCategory::InlineScript,
             subject,
-            "inline_script 既不是路径字符串也不是含 script 字段的对象".to_string(),
+            DefinitionIssue::InvalidInlineCall,
         ));
         return Vec::new();
     };
@@ -130,7 +131,9 @@ fn expand_field(
             source,
             GameDataCategory::InlineScript,
             subject,
-            format!("inline_script `{key}` 存在循环引用"),
+            DefinitionIssue::InlineCycle {
+                script: key.clone(),
+            },
         ));
         return Vec::new();
     }
@@ -144,7 +147,9 @@ fn expand_field(
                 source,
                 GameDataCategory::InlineScript,
                 subject,
-                format!("找不到 inline_script `{key}`"),
+                DefinitionIssue::InlineMissing {
+                    script: key.clone(),
+                },
             ));
             Vec::new()
         }

@@ -1,3 +1,4 @@
+use dtt_core::condition::ContextReason;
 use dtt_core::condition::{PredicateEvaluation, ScopeEvaluation};
 
 use super::AnalysisContext;
@@ -22,7 +23,7 @@ pub(super) enum ObjectRef {
     },
     Unresolved {
         kind: Option<ObjectKind>,
-        reason: String,
+        reason: ContextReason,
     },
 }
 
@@ -68,24 +69,27 @@ fn step(reference: &str, current: ObjectRef, context: &AnalysisContext<'_>) -> O
                 .checked_sub(depth)
                 .and_then(|index| context.previous.get(index))
                 .cloned()
-                .unwrap_or_else(|| unresolved(None, "没有对应的前序作用域"))
+                .unwrap_or_else(|| unresolved(None, ContextReason::MissingPreviousScope))
         }
-        key if repeated_depth(key, "from").is_some() => unresolved(
-            None,
-            "科技条件入口没有事件来源对象，不能将 from 视作玩家国家",
-        ),
+        key if repeated_depth(key, "from").is_some() => {
+            unresolved(None, ContextReason::MissingEventSource)
+        }
         "founder_species" | "owner_species" | "species" => match current {
             ObjectRef::OpeningCountry if context.world.snapshot.founder_species.is_some() => {
                 ObjectRef::FounderSpecies
             }
-            ObjectRef::OpeningCountry => {
-                unresolved(Some(ObjectKind::Species), "未提取到创始物种对象")
-            }
+            ObjectRef::OpeningCountry => unresolved(
+                Some(ObjectKind::Species),
+                ContextReason::MissingFounderSpecies,
+            ),
             ObjectRef::Future {
                 kind: ObjectKind::Country,
                 ..
             } => future(ObjectKind::Species, None),
-            _ => unresolved(Some(ObjectKind::Species), "当前对象没有已核实的该物种关系"),
+            _ => unresolved(
+                Some(ObjectKind::Species),
+                ContextReason::UnknownSpeciesRelation,
+            ),
         },
         "owner" => match current {
             ObjectRef::Future {
@@ -96,7 +100,7 @@ fn step(reference: &str, current: ObjectRef, context: &AnalysisContext<'_>) -> O
                 kind: ObjectKind::Planet | ObjectKind::Leader,
                 ..
             } => future(ObjectKind::Country, None),
-            _ => unresolved(Some(ObjectKind::Country), "无法从当前对象确定唯一所属国家"),
+            _ => unresolved(Some(ObjectKind::Country), ContextReason::UnknownOwner),
         },
         "federation" if current.kind() == Some(ObjectKind::Country) => {
             future(ObjectKind::Federation, None)
@@ -107,7 +111,7 @@ fn step(reference: &str, current: ObjectRef, context: &AnalysisContext<'_>) -> O
         "leader" if current.kind() == Some(ObjectKind::Country) => {
             future(ObjectKind::Leader, Some(current))
         }
-        _ => unresolved(None, &format!("无法解析作用域引用 `{reference}`")),
+        _ => unresolved(None, ContextReason::UnknownScope),
     }
 }
 
@@ -121,11 +125,8 @@ fn repeated_depth(value: &str, unit: &str) -> Option<usize> {
     .then_some(value.len() / unit.len())
 }
 
-fn unresolved(kind: Option<ObjectKind>, reason: &str) -> ObjectRef {
-    ObjectRef::Unresolved {
-        kind,
-        reason: reason.into(),
-    }
+fn unresolved(kind: Option<ObjectKind>, reason: ContextReason) -> ObjectRef {
+    ObjectRef::Unresolved { kind, reason }
 }
 
 fn presence(target: &ObjectRef, name: &str, context: &AnalysisContext<'_>) -> PredicateEvaluation {
@@ -167,7 +168,7 @@ pub(super) fn collection<'a>(
                 .then(|| context.current.clone());
             future(kind, owner)
         })
-        .unwrap_or_else(|| unresolved(None, &format!("集合 `{name}` 的对象类型或来源尚未确定")));
+        .unwrap_or_else(|| unresolved(None, ContextReason::UnknownCollection));
     let presence = presence(&current, name, context);
     ScopeEvaluation {
         context: context.enter(current, name),

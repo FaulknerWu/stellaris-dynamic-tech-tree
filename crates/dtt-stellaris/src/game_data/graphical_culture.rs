@@ -1,3 +1,4 @@
+use crate::game_data::DefinitionIssue;
 use std::collections::HashSet;
 
 use dtt_core::condition::GraphicalCultures;
@@ -67,7 +68,7 @@ fn collect_cultures(
                         source,
                         GameDataCategory::GraphicalCulture,
                         &name,
-                        format!("图形文化 `{name}` 被 `{source}` 覆盖"),
+                        DefinitionIssue::Overwritten { previous: None },
                     ));
                 }
             }
@@ -75,7 +76,9 @@ fn collect_cultures(
                 source,
                 GameDataCategory::GraphicalCulture,
                 &name,
-                format!("图形文化 `{name}` 的 `ship_kinds` 不是可读的标量数组"),
+                DefinitionIssue::InvalidField {
+                    field: "ship_kinds".into(),
+                },
             )),
         }
     }
