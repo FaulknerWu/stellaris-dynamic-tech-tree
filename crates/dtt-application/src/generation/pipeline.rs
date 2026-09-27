@@ -1,3 +1,4 @@
+use crate::error::SettingsIssue;
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -7,7 +8,7 @@ use dtt_stellaris::analysis::World;
 use dtt_stellaris::game_data::load_game_data;
 use dtt_stellaris::load_order::{Manifest, resolve};
 use dtt_stellaris::localisation;
-use dtt_stellaris::output::{SupportedLanguage, WriteRequest, render_tree_content, write};
+use dtt_stellaris::output::{GameLanguage, WriteRequest, render_tree_content, write};
 
 use super::report::{LanguageLocalisationDiagnostic, build_report};
 use super::{GenerationSource, RunGenerationRequest, RunGenerationResult, RunOutcome};
@@ -51,9 +52,7 @@ pub fn run_generation(request: &RunGenerationRequest) -> Result<RunGenerationRes
     notify_stage(request, GenerationStage::IngestTech)?;
     let game_data = load_game_data(&manifest)?;
     if game_data.value.technologies.catalog.is_empty() {
-        return Err(Error::Application(
-            "No technology definitions were read from common/technology".into(),
-        ));
+        return Err(Error::NoTechnologyDefinitions);
     }
 
     notify_stage(request, GenerationStage::Relations)?;
@@ -90,7 +89,7 @@ pub fn run_generation(request: &RunGenerationRequest) -> Result<RunGenerationRes
         &eligibility.eligible,
         &request.settings.languages,
         request,
-    );
+    )?;
 
     notify_stage(request, GenerationStage::Cycles)?;
     let report = build_report(
@@ -114,7 +113,7 @@ pub fn run_generation(request: &RunGenerationRequest) -> Result<RunGenerationRes
                 .map(|technology| (technology_id.clone(), technology.tier))
         })
         .collect();
-    let report_body = report.format_text();
+    let report_body = super::render_report(&report, request.presentation.report_locale)?;
     let written = write(&WriteRequest {
         eligible: &report.eligible,
         render_results_by_language: &render_results_by_language,
@@ -164,17 +163,17 @@ fn validate_paths(request: &RunGenerationRequest) -> Result<()> {
     }
     let stellaris_root = Path::new(&request.settings.stellaris_root);
     if !stellaris_root.is_dir() {
-        return Err(Error::Settings(format!(
-            "Stellaris install directory does not exist or is not a directory: {}",
-            stellaris_root.display()
-        )));
+        return Err(Error::Settings(SettingsIssue::InvalidPath {
+            field: "stellaris_root",
+            path: stellaris_root.to_path_buf(),
+        }));
     }
     let launcher_db = Path::new(&request.settings.launcher_db);
     if !launcher_db.is_file() {
-        return Err(Error::Settings(format!(
-            "Launcher database does not exist or is not a file: {}",
-            launcher_db.display()
-        )));
+        return Err(Error::Settings(SettingsIssue::InvalidPath {
+            field: "launcher_db",
+            path: launcher_db.to_path_buf(),
+        }));
     }
     Ok(())
 }
@@ -184,11 +183,12 @@ fn render_all(
     graph: &Graph,
     swaps: &SwapResolution,
     eligible: &[Id],
-    languages: &[SupportedLanguage],
+    languages: &[GameLanguage],
     request: &RunGenerationRequest,
-) -> HashMap<SupportedLanguage, HashMap<Id, String>> {
+) -> Result<HashMap<GameLanguage, HashMap<Id, String>>> {
     let mut by_language = HashMap::new();
     for lang in languages {
+        let translator = dtt_i18n::Translator::new(lang.locale(), dtt_i18n::Domain::Game)?;
         let mut trees = HashMap::new();
         for id in eligible {
             trees.insert(
@@ -199,23 +199,23 @@ fn render_all(
                     technologies,
                     swaps,
                     &request.render_limits,
-                    *lang,
-                ),
+                    &translator,
+                )?,
             );
         }
         by_language.insert(*lang, trees);
     }
-    by_language
+    Ok(by_language)
 }
 
 struct DescriptionIngest {
-    by_language: HashMap<SupportedLanguage, HashMap<Id, String>>,
+    by_language: HashMap<GameLanguage, HashMap<Id, String>>,
     diagnostics: Vec<LanguageLocalisationDiagnostic>,
 }
 
 fn effective_descriptions_by_language(
     manifest: &Manifest,
-    languages: &[SupportedLanguage],
+    languages: &[GameLanguage],
     technologies: &Catalog,
     swaps: &SwapResolution,
     eligible: &[Id],
@@ -229,7 +229,8 @@ fn effective_descriptions_by_language(
                 language: language.code().to_string(),
                 source: diagnostic.source,
                 path: diagnostic.path,
-                message: diagnostic.message,
+                kind: diagnostic.kind,
+                technical_detail: diagnostic.technical_detail,
             }
         }));
         let mut descriptions = HashMap::new();

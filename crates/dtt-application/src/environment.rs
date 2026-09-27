@@ -1,3 +1,4 @@
+use crate::error::SettingsIssue;
 use std::env;
 use std::path::{Path, PathBuf};
 
@@ -47,15 +48,21 @@ pub fn resolve_environment(request: &ResolveEnvironmentRequest) -> Result<Resolv
         request.documents_dir.clone(),
         request.launcher_db.clone(),
     );
-    let game_root = detected
-        .game_root
-        .ok_or_else(|| Error::Settings("Stellaris install directory was not detected".into()))?;
-    let documents_dir = detected
-        .documents_dir
-        .ok_or_else(|| Error::Settings("Stellaris user data directory was not detected".into()))?;
-    let launcher_db = detected
-        .launcher_db
-        .ok_or_else(|| Error::Settings("launcher-v2.sqlite was not detected".into()))?;
+    let game_root = detected.game_root.ok_or_else(|| {
+        Error::Settings(SettingsIssue::Missing {
+            field: "stellaris_root",
+        })
+    })?;
+    let documents_dir = detected.documents_dir.ok_or_else(|| {
+        Error::Settings(SettingsIssue::Missing {
+            field: "documents_dir",
+        })
+    })?;
+    let launcher_db = detected.launcher_db.ok_or_else(|| {
+        Error::Settings(SettingsIssue::Missing {
+            field: "launcher_db",
+        })
+    })?;
 
     Ok(ResolvedEnvironment {
         game_root,
@@ -66,12 +73,11 @@ pub fn resolve_environment(request: &ResolveEnvironmentRequest) -> Result<Resolv
 }
 
 pub fn output_directory() -> Result<PathBuf> {
-    let executable = env::current_exe()
-        .map_err(|error| Error::Application(format!("Failed to get current exe path: {error}")))?;
+    let executable = env::current_exe().map_err(|error| Error::ExecutablePath(error))?;
     executable
         .parent()
         .map(Path::to_path_buf)
-        .ok_or_else(|| Error::Application("Current executable path has no parent directory".into()))
+        .ok_or_else(|| Error::ExecutableParentMissing)
 }
 
 pub fn resolve_generation_settings(
@@ -83,12 +89,14 @@ pub fn resolve_generation_settings(
         request.launcher_db.clone(),
     );
     let stellaris_root = detected.game_root.ok_or_else(|| {
-        Error::Settings(
-            "Stellaris install directory was not detected; pass --stellaris-root".into(),
-        )
+        Error::Settings(SettingsIssue::Missing {
+            field: "stellaris_root",
+        })
     })?;
     let launcher_db = detected.launcher_db.ok_or_else(|| {
-        Error::Settings("launcher-v2.sqlite was not detected; pass --launcher-db".into())
+        Error::Settings(SettingsIssue::Missing {
+            field: "launcher_db",
+        })
     })?;
     let settings = GenerationSettings {
         stellaris_root: stellaris_root.to_string_lossy().into_owned(),
@@ -130,22 +138,22 @@ fn merge_detected(
 fn validate_explicit_path(
     path: Option<&Path>,
     predicate: impl FnOnce(&Path) -> bool,
-    field: &str,
+    field: &'static str,
 ) -> Result<()> {
     if let Some(path) = path
         && !predicate(path)
     {
-        return Err(Error::Settings(format!(
-            "{field} is invalid: {}",
-            path.display()
-        )));
+        return Err(Error::Settings(SettingsIssue::InvalidPath {
+            field,
+            path: path.to_path_buf(),
+        }));
     }
     Ok(())
 }
 
 fn normalise_languages(
-    languages: &[dtt_stellaris::output::SupportedLanguage],
-) -> Result<Vec<dtt_stellaris::output::SupportedLanguage>> {
+    languages: &[dtt_stellaris::output::GameLanguage],
+) -> Result<Vec<dtt_stellaris::output::GameLanguage>> {
     let mut normalised = Vec::new();
     for language in languages {
         if !normalised.contains(language) {
@@ -153,9 +161,7 @@ fn normalise_languages(
         }
     }
     if normalised.is_empty() {
-        return Err(Error::Settings(
-            "At least one output language is required".into(),
-        ));
+        return Err(Error::Settings(SettingsIssue::NoOutputLanguage));
     }
     Ok(normalised)
 }

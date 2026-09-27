@@ -12,6 +12,7 @@ name = "dtt_application"
 path = "src/lib.rs"
 
 [dependencies]
+dtt-i18n.workspace = true
 dtt-core.workspace = true
 dtt-stellaris.workspace = true
 serde.workspace = true

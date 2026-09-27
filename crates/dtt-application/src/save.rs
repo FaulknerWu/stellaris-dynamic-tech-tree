@@ -1,3 +1,4 @@
+use crate::error::SettingsIssue;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -7,7 +8,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
 
-pub use dtt_stellaris::save::PlayerCountryCandidate;
+pub use dtt_stellaris::save::{
+    PlayerCountryCandidate, SaveScanDiagnostic, SaveScanFailureKind, SaveUnavailableReason,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InspectSaveRequest {
@@ -37,6 +40,7 @@ pub struct ScanSaveLibraryRequest {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SaveLibrary {
+    pub diagnostics: Vec<SaveScanDiagnostic>,
     pub accounts: Vec<SaveAccount>,
 }
 
@@ -59,7 +63,7 @@ pub struct SaveIndex {
     pub modified_at_millis: u64,
     pub file_size: u64,
     pub state: SaveIndexState,
-    pub unavailable_reason: Option<String>,
+    pub unavailable_reason: Option<SaveUnavailableReason>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -94,7 +98,9 @@ pub fn scan_save_library(request: &ScanSaveLibraryRequest) -> Result<SaveLibrary
     let scanned = match request.source {
         SaveLibrarySource::Local => {
             let documents_dir = request.documents_dir.as_deref().ok_or_else(|| {
-                Error::Settings("documents_dir is required for local save scanning".into())
+                Error::Settings(SettingsIssue::Missing {
+                    field: "documents_dir",
+                })
             })?;
             dtt_stellaris::save::scan_local(documents_dir)
         }
@@ -144,6 +150,7 @@ pub fn scan_save_library(request: &ScanSaveLibraryRequest) -> Result<SaveLibrary
     accounts.sort_by(|left, right| left.0.cmp(&right.0));
 
     Ok(SaveLibrary {
+        diagnostics: scanned.diagnostics,
         accounts: accounts.into_iter().map(|(_, account)| account).collect(),
     })
 }

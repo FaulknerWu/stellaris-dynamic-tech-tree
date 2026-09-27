@@ -2,8 +2,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[error(transparent)]
+    Translation(#[from] dtt_i18n::TranslationError),
     #[error("settings error: {0}")]
-    Settings(String),
+    Settings(SettingsIssue),
     #[error("generation cancelled")]
     Cancelled,
     #[error("save file does not exist or is not accessible: {}", .0.display())]
@@ -18,6 +20,23 @@ pub enum Error {
     Domain(#[from] dtt_core::Error),
     #[error(transparent)]
     Stellaris(#[from] dtt_stellaris::Error),
-    #[error("application error: {0}")]
-    Application(String),
+    #[error("current_exe: {0}")]
+    ExecutablePath(#[source] std::io::Error),
+    #[error("executable_parent_missing")]
+    ExecutableParentMissing,
+    #[error("no_technology_definitions")]
+    NoTechnologyDefinitions,
+}
+
+#[derive(Debug, Clone, thiserror::Error)]
+#[error("{self:?}")]
+pub enum SettingsIssue {
+    Missing {
+        field: &'static str,
+    },
+    InvalidPath {
+        field: &'static str,
+        path: std::path::PathBuf,
+    },
+    NoOutputLanguage,
 }
