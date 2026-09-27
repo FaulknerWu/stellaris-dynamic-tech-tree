@@ -7,6 +7,9 @@
     "desktop:build": "pnpm --filter dtt-desktop build",
     "desktop:dev": "pnpm --filter dtt-desktop tauri dev",
     "desktop:tauri": "pnpm --filter dtt-desktop tauri",
-    "tauri": "pnpm --filter dtt-desktop tauri"
+    "tauri": "pnpm --filter dtt-desktop tauri",
+    "i18n:check": "pnpm --filter dtt-desktop i18n:check",
+    "i18n:generate": "pnpm --filter dtt-desktop i18n:generate",
+    "desktop:test": "pnpm --filter dtt-desktop test"
   }
 }
