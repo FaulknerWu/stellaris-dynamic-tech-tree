@@ -362,15 +362,7 @@ export type EnglishResources = {
       "truncated_other": "There are {{count, number}} more diagnostic items not displayed here. See the report file for full details.",
       "truncated_one": "There are {{count, number}} more diagnostic item not displayed here. See the report file for full details."
     },
-    "guide": {
-      "title": "How to Enable in Game",
-      "step1": "Create a new mod folder in Documents/Paradox Interactive/Stellaris/mod, and create descriptor.mod inside it;",
-      "step2": "Copy the entire localisation folder from the output directory into your new mod folder;",
-      "step3": "Enable the mod in the Stellaris Launcher playset and drag it to the VERY BOTTOM of the load order.",
-      "importantNote": "IMPORTANT: Place this mod at the very bottom of the load order, otherwise texts will be overridden by other mods."
-    },
-    "empty": "No generation result available",
-    "guideLoadOrderTitle": "Load order requirement"
+    "empty": "No generation result available"
   },
   "saves": {
     "title": "Select Save Game",

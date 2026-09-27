@@ -65,13 +65,5 @@
     },
     "truncated_other": "另有 {{count, number}} 条诊断信息未在此处全部展示，详情请查看诊断报告文件。"
   },
-  "guide": {
-    "title": "如何在游戏中启用",
-    "step1": "在文档目录的 mod 文件夹下新建一个 MOD 文件夹，并创建 descriptor.mod 文件；",
-    "step2": "将输出目录中的 localisation 文件夹整体复制到该 MOD 文件夹中；",
-    "step3": "在群星启动器的播放集 (Playset) 中启用该 MOD，并将它拖动到加载顺序的最底部。",
-    "importantNote": "重要提示：必须将本 MOD 置于加载顺序最底部，否则文本将被其他 MOD 覆盖。"
-  },
-  "empty": "无可用生成结果",
-  "guideLoadOrderTitle": "加载顺序要求"
+  "empty": "无可用生成结果"
 }

@@ -1,7 +1,6 @@
 import { diagnosticMessage } from "@/i18n/messages";
 import {
   AlertTriangle,
-  BookOpen,
   CheckCircle2,
   Cpu,
   Database,
@@ -19,7 +18,6 @@ import { useTranslation } from "react-i18next";
 import { DiagnosticSection } from "@/components/DiagnosticSection";
 import { Panel } from "@/components/Panel";
 import { StatCard } from "@/components/StatCard";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
@@ -266,27 +264,6 @@ export function ResultsPage({ state }: ResultsPageProps) {
               categoryKey="writeFailures"
               items={result.diagnostics.writeFailures}
             />
-          </section>
-
-          <section className="space-y-3">
-            <h3 className="flex items-center gap-2 text-title font-semibold">
-              <BookOpen className="size-4 text-muted-foreground" />
-              <span>{t($ => $.guide.title, { ns: "results" })}</span>
-            </h3>
-            <ol className="list-inside list-decimal space-y-1.5 text-body leading-relaxed text-muted-foreground">
-              <li>{t($ => $.guide.step1, { ns: "results" })}</li>
-              <li>{t($ => $.guide.step2, { ns: "results" })}</li>
-              <li>{t($ => $.guide.step3, { ns: "results" })}</li>
-            </ol>
-            <Alert className="mt-2 border-warning/40 bg-warning/10 text-body text-warning">
-              <AlertTriangle className="size-4 text-warning" />
-              <AlertTitle className="text-body font-semibold text-foreground">
-                {t($ => $.guideLoadOrderTitle, { ns: "results" })}
-              </AlertTitle>
-              <AlertDescription className="text-meta text-muted-foreground">
-                {t($ => $.guide.importantNote, { ns: "results" })}
-              </AlertDescription>
-            </Alert>
           </section>
         </div>
       </Panel>
