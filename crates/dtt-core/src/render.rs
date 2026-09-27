@@ -38,11 +38,25 @@ pub struct RenderInput<'a> {
     pub format_node: &'a dyn Fn(&Id, &Prerequisites) -> String,
 }
 
-pub fn render_tree(root: &Id, input: &RenderInput) -> String {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RenderOutcome {
+    Tree(String),
+    OverlongRoot {
+        root: Id,
+        child_count: usize,
+        limit: usize,
+    },
+}
+
+pub fn render_tree(root: &Id, input: &RenderInput) -> RenderOutcome {
     let direct = input.graph.unlocks(root);
 
     if direct.len() > input.limits.overlong_root_threshold {
-        return format_overlong_root(root, direct.len(), input.limits.overlong_root_threshold);
+        return RenderOutcome::OverlongRoot {
+            root: root.clone(),
+            child_count: direct.len(),
+            limit: input.limits.overlong_root_threshold,
+        };
     }
 
     let mut lines: Vec<String> = Vec::new();
@@ -51,14 +65,7 @@ pub fn render_tree(root: &Id, input: &RenderInput) -> String {
 
     render_children(root, "", input, &mut visited, &mut remaining, &mut lines, 1);
 
-    lines.join("\n")
-}
-
-fn format_overlong_root(root: &Id, n: usize, limit: usize) -> String {
-    format!(
-        "! overlong root: {root} has {n} direct children (limit {limit}) - tree omitted",
-        root = root.as_str()
-    )
+    RenderOutcome::Tree(lines.join("\n"))
 }
 
 fn render_children(
@@ -128,8 +135,6 @@ fn render_children(
 
     if let Some(extra) = truncated_extras {
         let trunc_prefix = format!("{parent_prefix}{TREE_EMPTY}");
-        lines.push(format!(
-            "{trunc_prefix}{TREE_BRANCH}{ELLIPSIS} {extra} more"
-        ));
+        lines.push(format!("{trunc_prefix}{TREE_BRANCH}{ELLIPSIS} (+{extra})"));
     }
 }

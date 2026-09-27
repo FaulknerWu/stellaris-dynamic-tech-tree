@@ -10,7 +10,7 @@ fn graph(edges: &[(&str, &[&str])]) -> Graph {
     Graph::build(&catalog, &catalog.sorted_ids())
 }
 
-fn render(graph: &Graph, limits: RenderLimits) -> String {
+fn render(graph: &Graph, limits: RenderLimits) -> RenderOutcome {
     render_tree(
         &"root".into(),
         &RenderInput {
@@ -32,7 +32,7 @@ fn diamond_graph_displays_shared_nodes_but_expands_descendants_once() {
     ]);
     assert_eq!(
         render(&graph, RenderLimits::default()),
-        "|-a\n|   |-c\n|       |-d\n|-b\n    |-c"
+        RenderOutcome::Tree("|-a\n|   |-c\n|       |-d\n|-b\n    |-c".into())
     );
 }
 
@@ -46,7 +46,7 @@ fn cycles_are_reported_and_rendering_terminates() {
     );
     assert_eq!(
         render(&graph, RenderLimits::default()),
-        "|-a\n|   |-b\n|       |-root\n|-root"
+        RenderOutcome::Tree("|-a\n|   |-b\n|       |-root\n|-root".into())
     );
 }
 
@@ -68,7 +68,7 @@ fn depth_and_node_budgets_bound_rendering_including_zero() {
                     ..Default::default()
                 }
             ),
-            expected
+            RenderOutcome::Tree(expected.into())
         );
     }
 }
@@ -86,7 +86,10 @@ fn sibling_limit_and_overlong_threshold_have_distinct_boundaries() {
         overlong_root_threshold: 3,
         ..Default::default()
     };
-    assert_eq!(render(&graph, limits.clone()), "|-a\n    |-... 2 more");
+    assert_eq!(
+        render(&graph, limits.clone()),
+        RenderOutcome::Tree("|-a\n    |-... (+2)".into())
+    );
     assert_eq!(
         render(
             &graph,
@@ -95,7 +98,11 @@ fn sibling_limit_and_overlong_threshold_have_distinct_boundaries() {
                 ..limits
             }
         ),
-        "! overlong root: root has 3 direct children (limit 2) - tree omitted"
+        RenderOutcome::OverlongRoot {
+            root: "root".into(),
+            child_count: 3,
+            limit: 2
+        }
     );
 }
 
@@ -120,5 +127,5 @@ fn additional_requirements_drop_the_satisfied_or_group_without_flattening_others
             },
         },
     );
-    assert_eq!(result, "|-child");
+    assert_eq!(result, RenderOutcome::Tree("|-child".into()));
 }

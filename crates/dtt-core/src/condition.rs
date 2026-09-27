@@ -91,7 +91,9 @@ pub enum UnknownConditionReason {
     },
     Context {
         trigger: String,
-        detail: String,
+        reason: ContextReason,
+        scope_path: Vec<String>,
+        calls: Vec<String>,
     },
 }
 
@@ -108,22 +110,29 @@ impl UnknownConditionReason {
 
 impl std::fmt::Display for UnknownConditionReason {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Trigger(name) => write!(formatter, "未识别触发器 `{name}`"),
-            Self::Operator { trigger, operator } => write!(
-                formatter,
-                "触发器 `{trigger}` 不支持运算符 `{}`",
-                operator.symbol()
-            ),
-            Self::MalformedArgument(name) => write!(formatter, "触发器 `{name}` 的参数无效"),
-            Self::StructuredArgument { trigger, keys } => write!(
-                formatter,
-                "触发器 `{trigger}` 的结构化参数尚未支持：{}",
-                keys.join(", ")
-            ),
-            Self::Context { trigger, detail } => write!(formatter, "{trigger}：{detail}"),
-        }
+        write!(formatter, "{self:?}")
     }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum ContextReason {
+    MissingPreviousScope,
+    MissingEventSource,
+    MissingFounderSpecies,
+    UnknownSpeciesRelation,
+    UnknownOwner,
+    UnknownTrigger,
+    ExpectedScalar,
+    UnboundArgument,
+    InvalidBoolean,
+    MissingIdentity,
+    UnverifiedStructure,
+    UnknownScope,
+    UnknownCollection,
+    RecursiveScript,
+    TypeMismatch {
+        expected: String,
+        actual: Option<String>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
