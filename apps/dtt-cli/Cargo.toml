@@ -12,6 +12,8 @@ name = "dtt"
 path = "src/main.rs"
 
 [dependencies]
+sys-locale.workspace = true
+dtt-i18n.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 dtt-application.workspace = true

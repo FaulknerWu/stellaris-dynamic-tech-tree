@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use dtt_application::{
     GenerationStatus, ResolveGenerationSettingsRequest, RunGenerationRequest, SwapUnknownStrategy,
     UnknownStrategy, resolve_generation_settings, run_generation,
@@ -6,66 +6,110 @@ use dtt_application::{
 
 use crate::args::{CliSwapUnknownStrategy, CliUnknownStrategy, GenerateArgs};
 
-pub fn run(args: GenerateArgs) -> Result<()> {
+pub fn run(
+    args: GenerateArgs,
+    locale: dtt_i18n::AppLocale,
+    t: &dtt_i18n::Translator,
+) -> Result<()> {
+    use dtt_i18n::CliMessage as M;
     let settings = resolve_generation_settings(&ResolveGenerationSettingsRequest {
-        stellaris_root: args.stellaris_root.clone(),
-        documents_dir: args.documents_dir.clone(),
-        launcher_db: args.launcher_db.clone(),
-        languages: args.languages.clone(),
+        stellaris_root: args.stellaris_root,
+        documents_dir: args.documents_dir,
+        launcher_db: args.launcher_db,
+        languages: args.languages,
         unknown_strategy: args.unknown_strategy.into(),
         swap_unknown_strategy: args.swap_unknown_strategy.into(),
-    })
-    .context("invalid configuration")?;
-    println!("使用群星本体目录: {}", settings.stellaris_root);
-    println!("使用启动器数据库: {}", settings.launcher_db);
-    println!("输出位置: 当前可执行文件所在目录的 localisation 子目录");
-
-    let request = RunGenerationRequest::from_save(args.save_file, settings);
-    let outcome = run_generation(&request).context("failed to generate technology tree")?;
-    println!("生成状态: {}", status_label(outcome.output.status));
+    })?;
+    println!("{}: {}", t.cli(M::GameRoot)?, settings.stellaris_root);
+    println!("{}: {}", t.cli(M::Launcher)?, settings.launcher_db);
+    println!("{}", t.cli(M::Output)?);
+    let mut request = RunGenerationRequest::from_save(args.save_file, settings);
+    request.presentation.report_locale = locale;
+    let stages = [
+        dtt_application::GenerationStage::SaveParse,
+        dtt_application::GenerationStage::LoadOrder,
+        dtt_application::GenerationStage::IngestTech,
+        dtt_application::GenerationStage::Relations,
+        dtt_application::GenerationStage::IngestL10n,
+        dtt_application::GenerationStage::Render,
+        dtt_application::GenerationStage::Cycles,
+        dtt_application::GenerationStage::WriteOutput,
+        dtt_application::GenerationStage::Done,
+    ];
+    let messages = stages
+        .into_iter()
+        .map(|stage| {
+            Ok((
+                stage,
+                t.stage(match stage {
+                    dtt_application::GenerationStage::SaveParse => {
+                        dtt_i18n::StageMessage::SaveParse
+                    }
+                    dtt_application::GenerationStage::LoadOrder => {
+                        dtt_i18n::StageMessage::LoadOrder
+                    }
+                    dtt_application::GenerationStage::IngestTech => {
+                        dtt_i18n::StageMessage::IngestTech
+                    }
+                    dtt_application::GenerationStage::Relations => {
+                        dtt_i18n::StageMessage::Relations
+                    }
+                    dtt_application::GenerationStage::IngestL10n => {
+                        dtt_i18n::StageMessage::IngestL10n
+                    }
+                    dtt_application::GenerationStage::Render => dtt_i18n::StageMessage::Render,
+                    dtt_application::GenerationStage::Cycles => dtt_i18n::StageMessage::Cycles,
+                    dtt_application::GenerationStage::WriteOutput => {
+                        dtt_i18n::StageMessage::WriteOutput
+                    }
+                    dtt_application::GenerationStage::Done => dtt_i18n::StageMessage::Done,
+                })?,
+            ))
+        })
+        .collect::<Result<Vec<_>, dtt_i18n::TranslationError>>()?;
+    request.progress = Some(std::sync::Arc::new(move |stage| {
+        if let Some((_, message)) = messages.iter().find(|(candidate, _)| *candidate == stage) {
+            eprintln!("{message}");
+        }
+    }));
+    let result = run_generation(&request)?;
     println!(
-        "科技定义: {}，可用科技: {}，数据源: {}",
-        outcome.technology_count,
-        outcome.report.eligible.len(),
-        outcome.source_count
+        "{}",
+        t.cli(match result.output.status {
+            GenerationStatus::Success => M::Success,
+            GenerationStatus::Incomplete => M::Incomplete,
+        })?
     );
     println!(
-        "条件替换: 已匹配={}，未匹配={}，不确定并保留基础显示={}",
-        outcome.report.swap_matched, outcome.report.swap_nomatch, outcome.report.swap_uncertain
+        "{}",
+        t.cli_summary(
+            result.technology_count,
+            result.report.eligible.len(),
+            result.source_count
+        )?
     );
-    let parse_failures = outcome.report.game_data_diagnostics.len();
-    if parse_failures > 0 {
-        println!("Game data diagnostics: {parse_failures}");
-    }
-    if let Some(path) = &outcome.output.report_path {
-        println!("Report: {path}");
-    }
-    if !outcome.output.written.is_empty() {
-        println!("已写出文件:");
-        for path in &outcome.output.written {
+    print!(
+        "{}",
+        dtt_application::render_report(&result.report, locale)?
+    );
+    for (label, paths) in [
+        (M::Written, &result.output.written),
+        (M::Removed, &result.output.removed),
+    ] {
+        if !paths.is_empty() {
+            println!("{}:", t.cli(label)?);
+        }
+        for path in paths {
             println!("  {path}");
         }
     }
-    if !outcome.output.removed.is_empty() {
-        println!("已清理过期文件:");
-        for path in &outcome.output.removed {
-            println!("  {path}");
-        }
+    if !result.output.failed.is_empty() {
+        println!("{}:", t.cli(M::Failed)?);
     }
-    if !outcome.output.failed.is_empty() {
-        println!("写出失败:");
-        for failure in &outcome.output.failed {
-            println!("  {failure}");
-        }
+    for failure in result.output.failed {
+        println!("  {}: {}", failure.path, failure.technical_detail);
     }
     Ok(())
-}
-
-fn status_label(status: GenerationStatus) -> &'static str {
-    match status {
-        GenerationStatus::Success => "success",
-        GenerationStatus::Incomplete => "incomplete",
-    }
 }
 
 impl From<CliUnknownStrategy> for UnknownStrategy {
