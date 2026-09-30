@@ -2,6 +2,16 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_PERSISTED_DATA, validatePersistedData } from "./store";
 
 describe("persisted preferences", () => {
+  it.each(["ja", "ru"])("retains %s and both new output languages across persistence", (localePreference) => {
+    const data = validatePersistedData({
+      schemaVersion: 2, localePreference,
+      languages: ["japanese", "russian", "japanese", "french"],
+    });
+    expect(data.localePreference).toBe(localePreference);
+    expect(data.languages).toEqual(["japanese", "russian"]);
+    expect(validatePersistedData(JSON.parse(JSON.stringify(data)))).toEqual(data);
+  });
+
   it.each([
     { name: "missing data", value: null },
     { name: "an outdated schema", value: { schemaVersion: 1, languages: ["simp_chinese"] } },

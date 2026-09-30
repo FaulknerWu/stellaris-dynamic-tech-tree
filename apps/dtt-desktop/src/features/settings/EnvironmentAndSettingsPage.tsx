@@ -38,7 +38,7 @@ interface EnvironmentAndSettingsPageProps {
   onRescanEnvironment: () => void;
 }
 
-const ALL_LANGUAGES = ["english", "simp_chinese"] as const;
+const ALL_LANGUAGES = ["english", "simp_chinese", "japanese", "russian"] as const;
 
 const UNKNOWN_STRATEGY_KEYS: {
   id: UnknownStrategyDto;

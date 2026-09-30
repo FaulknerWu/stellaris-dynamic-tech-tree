@@ -1,0 +1,60 @@
+{
+  "missing_mod_descriptor": "descriptor.mod がありません：{{name}}。この MOD の replace_path 規則は適用されません。",
+  "game_data": "ゲームデータの診断：{{source}} / {{subject}} / {{category}} / {{reason}} / {{offset}}",
+  "unhandled_definition": "{{technology}}（{{source}}）に未処理のフィールドがあります：{{items}}",
+  "localisation": "ローカライズを読み込めませんでした：{{language}} / {{source}} / {{path}} / {{reason}}",
+  "self_reference": "自己参照：{{technology}}",
+  "cycle": "循環依存：{{items}}",
+  "write_failed": "{{operation}}に失敗しました：{{path}}",
+  "operations": {
+    "write": "書き込み",
+    "remove": "削除",
+    "format": "書式設定"
+  },
+  "unknown_condition_other": "不明な条件 {{name}}：{{count, number}} 件、技術：{{items}}",
+  "deferred_condition_other": "判定を保留した条件 {{name}}：{{count, number}} 件、技術：{{items}}",
+  "issues": {
+    "invalid_utf8": "ファイルは有効な UTF-8 ではありません。",
+    "invalid_syntax": "Clausewitz 構文が無効です。",
+    "expected_scalar": "スカラー値が必要です。",
+    "expected_object": "オブジェクトが必要です。",
+    "invalid_field": "フィールドが存在しないか無効です：{{field}}。",
+    "overwritten": "現在のソースが定義を上書きしました。以前のソース：{{previous}}。",
+    "inline_cycle": "インラインスクリプトに循環があります：{{script}}。",
+    "inline_missing": "インラインスクリプトが見つかりません：{{script}}。",
+    "invalid_inline_call": "inline_script はパス、または script フィールドを持つオブジェクトである必要があります。",
+    "isolated_branch": "対応する分岐のない else_if または else は確実に変換できません。",
+    "invalid_condition": "条件の構造を変換できません。",
+    "malformed_argument": "トリガーの引数を解析できません。",
+    "structured_argument": "入れ子になったトリガー引数を解釈する機能は未対応です。",
+    "duplicate_parameter": "パラメーターが重複しているため、確実な評価ができません。",
+    "invalid_swap": "置き換え {{index}} をスキップします：{{field}} が存在しないか無効です。",
+    "duplicate_field": "フィールド {{field}} が重複しています。最初の値のみ読み込みます。ゲームの統合規則は未検証です。",
+    "field_case": "フィールド {{field}} の大文字・小文字が {{expected}} と異なります。自動変換は行いません。"
+  },
+  "conditions": {
+    "trigger": "認識できないトリガー",
+    "operator": "未対応の比較演算子",
+    "malformed_argument": "無効なトリガー引数",
+    "structured_argument": "未対応の構造化引数",
+    "missing_previous_scope": "対応する前のスコープがありません",
+    "missing_event_source": "技術条件にはイベント発生元オブジェクトがありません",
+    "missing_founder_species": "創設種族が抽出されていません",
+    "unknown_species_relation": "種族の関係は未検証です",
+    "unknown_owner": "所有国を一意に特定できません",
+    "unknown_trigger": "認識できないトリガーのため、不確定のまま保持します",
+    "expected_scalar": "帝国の初期情報に関する条件にはスカラー値が必要です",
+    "unbound_argument": "引数が空か、変数が未束縛です",
+    "invalid_boolean": "真偽条件には yes または no が必要です",
+    "missing_identity": "帝国の初期情報が存在しないか読み取れません",
+    "unverified_structure": "条件の構造は未検証です",
+    "unknown_scope": "解決できないスコープ参照",
+    "unknown_collection": "コレクションの種類またはソースが不明です",
+    "recursive_script": "再帰的なスクリプトトリガー",
+    "type_mismatch": "対象の型が一致しません"
+  },
+  "localisationReasons": {
+    "invalid_utf8": "ファイルは有効な UTF-8 ではありません。",
+    "read_failed": "ファイルを読み取れませんでした。"
+  }
+}

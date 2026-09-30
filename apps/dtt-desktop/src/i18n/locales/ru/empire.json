@@ -1,0 +1,45 @@
+{
+  "inspecting": "Чтение данных сохранения и империи...",
+  "countryLabel": "Государство №{{id}}",
+  "sections": {
+    "civics": "Гражданские модели",
+    "ethics": "Принципы",
+    "traits": "Признаки вида",
+    "ascensionPerks": "Бонусы за стремление",
+    "traditions": "Традиции"
+  },
+  "metrics": {
+    "authority": "Форма правления",
+    "origin": "Происхождение",
+    "species": "Вид основателей",
+    "countryType": "Тип государства"
+  },
+  "defaults": {
+    "authority": "Не указана",
+    "origin": "Стандартное происхождение",
+    "species": "Обычный биологический вид",
+    "countryType": "Неизвестный тип"
+  },
+  "tabs": {
+    "civics": "Принципы и гражданские модели",
+    "traits": "Вид и признаки",
+    "ascension": "Стремление и традиции"
+  },
+  "empty": {
+    "ethics": "Нет принципов",
+    "civics": "Нет данных о гражданских моделях",
+    "traits": "Нет данных о признаках",
+    "ascensionPerks": "Нет бонусов за стремление",
+    "traditions": "Нет данных о традициях"
+  },
+  "civicBadge": "Гражданская модель",
+  "playerCountrySwitch": "Государство игрока",
+  "selectCountryHint": "Выберите государство игрока для просмотра его империи.",
+  "selectSaveHint": "Выберите слева корректное текстовое сохранение без режима «Стальная воля»",
+  "detail": "Подробнее",
+  "showLess": "Свернуть",
+  "showMore_one": "Показать ещё {{count, number}}",
+  "showMore_few": "Показать ещё {{count, number}}",
+  "showMore_many": "Показать ещё {{count, number}}",
+  "showMore_other": "Показать ещё {{count, number}}"
+}

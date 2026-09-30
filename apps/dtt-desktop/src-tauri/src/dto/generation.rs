@@ -8,12 +8,18 @@ pub enum AppLocaleDto {
     En,
     #[serde(rename = "zh-Hans")]
     ZhHans,
+    #[serde(rename = "ja")]
+    Ja,
+    #[serde(rename = "ru")]
+    Ru,
 }
 impl From<AppLocaleDto> for application::AppLocale {
     fn from(value: AppLocaleDto) -> Self {
         match value {
             AppLocaleDto::En => Self::En,
             AppLocaleDto::ZhHans => Self::ZhHans,
+            AppLocaleDto::Ja => Self::Ja,
+            AppLocaleDto::Ru => Self::Ru,
         }
     }
 }
@@ -23,6 +29,8 @@ impl From<AppLocaleDto> for application::AppLocale {
 pub enum GameLanguageDto {
     English,
     SimpChinese,
+    Japanese,
+    Russian,
 }
 
 impl From<GameLanguageDto> for application::GameLanguage {
@@ -30,6 +38,8 @@ impl From<GameLanguageDto> for application::GameLanguage {
         match value {
             GameLanguageDto::English => Self::English,
             GameLanguageDto::SimpChinese => Self::SimpChinese,
+            GameLanguageDto::Japanese => Self::Japanese,
+            GameLanguageDto::Russian => Self::Russian,
         }
     }
 }
@@ -39,6 +49,8 @@ impl From<application::GameLanguage> for GameLanguageDto {
         match value {
             application::GameLanguage::English => Self::English,
             application::GameLanguage::SimpChinese => Self::SimpChinese,
+            application::GameLanguage::Japanese => Self::Japanese,
+            application::GameLanguage::Russian => Self::Russian,
         }
     }
 }

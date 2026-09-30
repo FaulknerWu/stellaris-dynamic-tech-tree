@@ -216,10 +216,17 @@ mod tests {
             ..Default::default()
         };
         let english = render_report(&report, AppLocale::En).unwrap();
-        let chinese = render_report(&report, AppLocale::ZhHans).unwrap();
         assert!(english.contains("Eligible technologies"));
-        assert!(chinese.contains("可用科技"));
-        assert!(english.contains("tech_测试") && chinese.contains("tech_测试"));
+        for (locale, label) in [
+            (AppLocale::ZhHans, "可用科技"),
+            (AppLocale::Ja, "対象の技術"),
+            (AppLocale::Ru, "Доступные технологии"),
+        ] {
+            let translated = render_report(&report, locale).unwrap();
+            assert!(translated.contains(label), "{translated}");
+            assert!(translated.contains("tech_测试"));
+        }
+        assert!(english.contains("tech_测试"));
         assert_eq!(english, render_report(&report, AppLocale::En).unwrap());
     }
 }

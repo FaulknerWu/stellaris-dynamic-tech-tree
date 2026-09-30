@@ -73,3 +73,37 @@ fn invalid_environment_warns_once_but_explicit_system_skips_it() {
     assert!(output.status.success());
     assert!(output.stderr.is_empty());
 }
+
+#[test]
+fn japanese_and_russian_help_errors_and_environment_are_localised() {
+    for (locale, usage, error) in [
+        ("ja", "使用方法", "不明な引数またはサブコマンドです"),
+        ("ru", "Использование", "Неизвестный аргумент или подкоманда"),
+    ] {
+        for args in [
+            vec!["--locale", locale, "--help"],
+            vec!["--help", "--locale", locale],
+            vec!["generate", "--help", "--locale", locale],
+        ] {
+            let output = run(&args, "en");
+            assert!(output.status.success(), "{output:?}");
+            let text = String::from_utf8(output.stdout).unwrap();
+            assert!(text.contains(usage), "{text}");
+            assert!(!text.contains("Usage:"), "{text}");
+            assert!(output.stderr.is_empty());
+        }
+        let output = run(&["--help"], locale);
+        assert!(output.status.success());
+        assert!(String::from_utf8(output.stdout).unwrap().contains(usage));
+        assert!(output.stderr.is_empty());
+        let output = run(&["--locale", locale, "--wat"], "en");
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        assert_eq!(
+            String::from_utf8(output.stderr).unwrap().lines().next(),
+            Some(error)
+        );
+        let output = run(&["--locale=en", "--help"], locale);
+        assert!(String::from_utf8(output.stdout).unwrap().contains("Usage:"));
+    }
+}

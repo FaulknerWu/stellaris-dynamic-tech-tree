@@ -41,7 +41,7 @@ export function validatePersistedData(raw: unknown): PersistedData {
   const value = raw && typeof raw === "object" ? raw as Record<string, unknown> : {};
   if (value.schemaVersion !== 2) return { ...DEFAULT_PERSISTED_DATA };
   const languageValues = Array.isArray(value.languages) ? value.languages : ["english"];
-  const languages = [...new Set(languageValues.filter((v): v is "english" | "simp_chinese" => v === "english" || v === "simp_chinese"))];
+  const languages = [...new Set(languageValues.filter((v): v is GameLanguageDto => v === "english" || v === "simp_chinese" || v === "japanese" || v === "russian"))];
   const overrides = value.overrides && typeof value.overrides === "object" ? value.overrides as Record<string, unknown> : {};
   const path = (key: string) => typeof overrides[key] === "string" ? overrides[key] as string : null;
   return {

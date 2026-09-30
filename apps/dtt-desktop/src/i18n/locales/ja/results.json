@@ -1,0 +1,69 @@
+{
+  "title": "生成結果",
+  "banner": {
+    "success": {
+      "title": "生成完了",
+      "description": "ローカライズと依存関係ツリーのファイルを {{writtenCount, number}} 件出力しました。"
+    },
+    "incomplete": {
+      "title": "一部完了",
+      "description": "{{failedCount, number}} 件のファイルを書き込めませんでした。{{writtenCount, number}} 件は正常に生成されました。"
+    }
+  },
+  "stats": {
+    "sources": "データソース",
+    "totalTech": "技術総数",
+    "totalTechDesc": "統合された技術定義",
+    "eligibleTech": "対象の技術",
+    "eligibleTechDesc": "選択した帝国の初期情報に基づき保持された将来の技術経路",
+    "swaps": "技術の置き換え",
+    "swapsDesc": "一致：{{matched, number}}、不一致：{{noMatch, number}}、不確定：{{uncertain, number}}",
+    "sourcesDesc_other": "基本ゲームと MOD のデータソース計 {{count, number}} 件"
+  },
+  "files": {
+    "title": "出力ファイル",
+    "written": "書き込み済みファイル",
+    "removed": "削除した旧ファイル",
+    "failed": "処理に失敗したファイル",
+    "report": "診断レポート"
+  },
+  "diagnostics": {
+    "title": "診断",
+    "categories": {
+      "loadOrder": {
+        "title": "MOD 読み込み通知",
+        "description": "記述ファイルなしで読み込まれた MOD"
+      },
+      "unknownConditions": {
+        "title": "不明な条件",
+        "description": "判定できないトリガーと影響を受ける技術"
+      },
+      "deferredConditions": {
+        "title": "将来の条件",
+        "description": "将来の可能性として保持されたイベント、進行状況、オブジェクトの条件"
+      },
+      "gameData": {
+        "title": "ゲームデータ読み込み",
+        "description": "ゲームと MOD のファイル解析で発生した問題"
+      },
+      "unhandledDefinitions": {
+        "title": "未処理のフィールド",
+        "description": "技術定義内の認識できないフィールド"
+      },
+      "localisation": {
+        "title": "ローカライズ",
+        "description": "ローカライズファイルの解析と書式の問題"
+      },
+      "cycles": {
+        "title": "循環依存",
+        "description": "技術間の循環依存と自己参照"
+      },
+      "writeFailures": {
+        "title": "書き込み失敗",
+        "description": "出力先に書き込めなかったファイル"
+      }
+    },
+    "truncated_other": "ほかに {{count, number}} 件の診断項目があります。すべての詳細はレポートファイルを参照してください。"
+  },
+  "empty": "生成結果がありません"
+}

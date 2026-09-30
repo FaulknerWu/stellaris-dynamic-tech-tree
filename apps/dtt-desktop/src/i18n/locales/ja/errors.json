@@ -1,0 +1,39 @@
+{
+  "codeHints": {
+    "LAUNCHER_DATABASE_UNAVAILABLE": "ランチャーデータベース（launcher-v2.sqlite）が存在しないか、読み取れません。有効なデータベースファイルを選択してください。",
+    "SAVE_UNAVAILABLE": "指定されたセーブが存在しないか、読み取り権限がありません。セーブ一覧を更新するか、セーブを選び直してください。",
+    "SAVE_CONTAINER_CORRUPT": "セーブのコンテナまたは内部の gamestate 構造が破損しています。別のセーブをお試しください。",
+    "UNSUPPORTED_BINARY_SAVE": "鉄人モードまたはバイナリ形式のセーブは解析できません。DTT は鉄人モード以外のテキスト形式のセーブにのみ対応しています。",
+    "PLAYER_COUNTRY_MISSING": "このセーブにプレイヤーが操作する帝国が見つかりません。プレイヤーのセーブであることを確認してください。",
+    "PLAYER_COUNTRY_REQUIRED": "複数のプレイヤー帝国が見つかりました。帝国カードで対象の帝国を選択してください。",
+    "GENERATION_BUSY": "生成タスクが実行中です。完了を待つか、実行中のタスクをキャンセルしてから開始してください。",
+    "GENERATION_CANCELLED": "ユーザーの操作により生成タスクがキャンセルされました。",
+    "INTERNAL": "内部エラーが発生しました。問題を報告する際は、以下の技術的な詳細を展開してください。",
+    "MISSING_SETTING": "必須の環境設定がありません。ゲームフォルダー、ドキュメントフォルダー、ランチャーデータベースを選択してください。",
+    "INVALID_PATH": "選択したパスが利用できないか、種類が正しくありません。環境パスを確認してください。",
+    "NO_OUTPUT_LANGUAGE": "ゲームの出力言語を少なくとも1つ選択してください。",
+    "EXECUTABLE_PATH_UNAVAILABLE": "実行ファイルの場所を特定できませんでした。アプリケーションのインストール状態を確認してください。",
+    "NO_TECHNOLOGY_DEFINITIONS": "common/technology から技術を読み込めませんでした。ゲームフォルダーと有効な MOD を確認してください。"
+  },
+  "remedy": {
+    "retry": "再試行"
+  },
+  "details": "技術的な詳細",
+  "path": "パス：{{path}}",
+  "titles": {
+    "SAVE_UNAVAILABLE": "セーブにアクセスできません",
+    "SAVE_CONTAINER_CORRUPT": "セーブが破損しています",
+    "UNSUPPORTED_BINARY_SAVE": "バイナリ形式・鉄人モードのセーブには未対応です",
+    "PLAYER_COUNTRY_MISSING": "プレイヤー帝国が見つかりません",
+    "PLAYER_COUNTRY_REQUIRED": "プレイヤー帝国を選択してください",
+    "LAUNCHER_DATABASE_UNAVAILABLE": "ランチャーデータベースを利用できません",
+    "GENERATION_BUSY": "生成はすでに実行中です",
+    "GENERATION_CANCELLED": "生成がキャンセルされました",
+    "INTERNAL": "内部エラー",
+    "MISSING_SETTING": "必須設定がありません",
+    "INVALID_PATH": "無効なパス",
+    "NO_OUTPUT_LANGUAGE": "出力言語が未選択です",
+    "EXECUTABLE_PATH_UNAVAILABLE": "出力フォルダーを利用できません",
+    "NO_TECHNOLOGY_DEFINITIONS": "技術定義がありません"
+  }
+}

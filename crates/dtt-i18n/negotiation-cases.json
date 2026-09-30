@@ -114,5 +114,106 @@
       "en"
     ],
     "expected": "en"
+  },
+  {
+    "candidates": [
+      "ja"
+    ],
+    "expected": "ja"
+  },
+  {
+    "candidates": [
+      "ja-JP"
+    ],
+    "expected": "ja"
+  },
+  {
+    "candidates": [
+      "JA-jp"
+    ],
+    "expected": "ja"
+  },
+  {
+    "candidates": [
+      "ja-JP-u-ca-japanese"
+    ],
+    "expected": "ja"
+  },
+  {
+    "candidates": [
+      "ja-x-dtt"
+    ],
+    "expected": "ja"
+  },
+  {
+    "candidates": [
+      "ru"
+    ],
+    "expected": "ru"
+  },
+  {
+    "candidates": [
+      "ru-RU"
+    ],
+    "expected": "ru"
+  },
+  {
+    "candidates": [
+      "RU-ru"
+    ],
+    "expected": "ru"
+  },
+  {
+    "candidates": [
+      "ru-BY"
+    ],
+    "expected": "ru"
+  },
+  {
+    "candidates": [
+      "ru-Cyrl-KZ"
+    ],
+    "expected": "ru"
+  },
+  {
+    "candidates": [
+      "ru-RU-u-nu-latn"
+    ],
+    "expected": "ru"
+  },
+  {
+    "candidates": [
+      "ru-x-dtt"
+    ],
+    "expected": "ru"
+  },
+  {
+    "candidates": [
+      "fr-FR",
+      "ja-JP",
+      "ru-RU"
+    ],
+    "expected": "ja"
+  },
+  {
+    "candidates": [
+      "invalid_tag",
+      "ru-RU",
+      "en-US"
+    ],
+    "expected": "ru"
+  },
+  {
+    "candidates": [
+      "ja-JP-u",
+      "ru-RU"
+    ],
+    "expected": "ru"
+  },
+  {
+    "candidates": [
+      "ru_RU"
+    ],
+    "expected": "en"
   }
 ]

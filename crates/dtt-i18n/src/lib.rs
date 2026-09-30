@@ -15,12 +15,18 @@ pub enum AppLocale {
     En,
     #[serde(rename = "zh-Hans")]
     ZhHans,
+    #[serde(rename = "ja")]
+    Ja,
+    #[serde(rename = "ru")]
+    Ru,
 }
 impl AppLocale {
     pub const fn tag(self) -> &'static str {
         match self {
             Self::En => "en",
             Self::ZhHans => "zh-Hans",
+            Self::Ja => "ja",
+            Self::Ru => "ru",
         }
     }
     pub fn negotiate<'a>(candidates: impl IntoIterator<Item = &'a str>) -> Self {
@@ -34,6 +40,8 @@ impl AppLocale {
         let tag = locale.id;
         match tag.language.as_str() {
             "en" => Some(Self::En),
+            "ja" => Some(Self::Ja),
+            "ru" => Some(Self::Ru),
             "zh" => {
                 if let Some(script) = tag.script {
                     return (script.as_str() == "Hans").then_some(Self::ZhHans);
@@ -60,14 +68,24 @@ impl Domain {
     fn source(self, locale: AppLocale) -> &'static str {
         match (self, locale) {
             (Self::Game, AppLocale::En) => include_str!("../locales/en/game.ftl"),
+            (Self::Game, AppLocale::Ja) => include_str!("../locales/ja/game.ftl"),
+            (Self::Game, AppLocale::Ru) => include_str!("../locales/ru/game.ftl"),
             (Self::Game, AppLocale::ZhHans) => include_str!("../locales/zh-Hans/game.ftl"),
             (Self::Report, AppLocale::En) => include_str!("../locales/en/report.ftl"),
+            (Self::Report, AppLocale::Ja) => include_str!("../locales/ja/report.ftl"),
+            (Self::Report, AppLocale::Ru) => include_str!("../locales/ru/report.ftl"),
             (Self::Report, AppLocale::ZhHans) => include_str!("../locales/zh-Hans/report.ftl"),
             (Self::Cli, AppLocale::En) => include_str!("../locales/en/cli.ftl"),
+            (Self::Cli, AppLocale::Ja) => include_str!("../locales/ja/cli.ftl"),
+            (Self::Cli, AppLocale::Ru) => include_str!("../locales/ru/cli.ftl"),
             (Self::Cli, AppLocale::ZhHans) => include_str!("../locales/zh-Hans/cli.ftl"),
             (Self::Errors, AppLocale::En) => include_str!("../locales/en/errors.ftl"),
+            (Self::Errors, AppLocale::Ja) => include_str!("../locales/ja/errors.ftl"),
+            (Self::Errors, AppLocale::Ru) => include_str!("../locales/ru/errors.ftl"),
             (Self::Errors, AppLocale::ZhHans) => include_str!("../locales/zh-Hans/errors.ftl"),
             (Self::Diagnostics, AppLocale::En) => include_str!("../locales/en/diagnostics.ftl"),
+            (Self::Diagnostics, AppLocale::Ja) => include_str!("../locales/ja/diagnostics.ftl"),
+            (Self::Diagnostics, AppLocale::Ru) => include_str!("../locales/ru/diagnostics.ftl"),
             (Self::Diagnostics, AppLocale::ZhHans) => {
                 include_str!("../locales/zh-Hans/diagnostics.ftl")
             }

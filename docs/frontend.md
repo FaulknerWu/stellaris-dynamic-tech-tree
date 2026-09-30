@@ -40,11 +40,11 @@ Rust DTO 是 IPC 类型的维护入口。修改 DTO 后，在仓库根目录运�
 
 `src/main.tsx` 先读取并校验设置，再调用 `bootstrapLocale` 初始化翻译、设置文档语言和窗口标题，随后尝试保存校验结果并挂载 React。保存失败状态会传给应用界面。
 
-界面使用 i18next / react-i18next 的 selector API 和生成的资源字面量类型。`src/i18n/controller.ts` 集中维护 `system | en | zh-Hans` 偏好、实际语言和保存失败状态，同时响应系统语言变化。界面语言与游戏输出语言分别保存和选择。
+界面使用 i18next / react-i18next 的 selector API 和生成的资源字面量类型。`src/i18n/controller.ts` 集中维护 `system | en | zh-Hans | ja | ru` 偏好、实际语言和保存失败状态，同时响应系统语言变化。界面语言与游戏输出语言分别保存和选择。
 
 `Intl` 格式器按显式 locale 和 options 缓存。错误与诊断以结构化数据保存在界面状态中，切换语言时直接重新翻译现有数据。磁盘报告采用任务创建时选定的产品语言。
 
-翻译资源位于 `src/i18n/locales/en` 和 `src/i18n/locales/zh-Hans`。修改资源后，运行 `pnpm i18n:generate` 更新类型，再运行 `pnpm i18n:check` 检查双语键、参数、复数、空值、重复键、闲置键和硬编码标签。
+翻译资源位于 `src/i18n/locales/` 下的 `en`、`zh-Hans`、`ja` 和 `ru` 目录。修改资源后，运行 `pnpm i18n:generate` 更新类型，再运行 `pnpm i18n:check` 检查各语言的键、参数、复数、空值、重复键、闲置键和硬编码标签。
 
 ## 运行时直接依赖
 

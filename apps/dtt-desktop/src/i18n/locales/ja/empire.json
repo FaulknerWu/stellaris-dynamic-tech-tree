@@ -1,0 +1,42 @@
+{
+  "inspecting": "セーブと帝国のデータを確認中...",
+  "countryLabel": "国家 #{{id}}",
+  "sections": {
+    "civics": "国是",
+    "ethics": "志向",
+    "traits": "種族特性",
+    "ascensionPerks": "アセンションパーク",
+    "traditions": "伝統"
+  },
+  "metrics": {
+    "authority": "統治形態",
+    "origin": "起源",
+    "species": "創設種族",
+    "countryType": "国家の種類"
+  },
+  "defaults": {
+    "authority": "未指定",
+    "origin": "標準の起源",
+    "species": "通常の生物種族",
+    "countryType": "不明な種類"
+  },
+  "tabs": {
+    "civics": "志向と国是",
+    "traits": "種族と特性",
+    "ascension": "アセンションと伝統"
+  },
+  "empty": {
+    "ethics": "志向なし",
+    "civics": "国是データなし",
+    "traits": "特性データなし",
+    "ascensionPerks": "アセンションパークなし",
+    "traditions": "伝統データなし"
+  },
+  "civicBadge": "国是",
+  "playerCountrySwitch": "プレイヤー国家",
+  "selectCountryHint": "帝国を確認するプレイヤー国家を選択してください。",
+  "selectSaveHint": "左の一覧から、鉄人モード以外の有効なテキスト形式のセーブを選択してください",
+  "detail": "詳細",
+  "showLess": "折りたたむ",
+  "showMore_other": "さらに {{count, number}} 件表示"
+}

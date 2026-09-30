@@ -1,0 +1,23 @@
+{
+  "dialog": {
+    "selectGameRoot": "Stellaris のゲームフォルダーを選択",
+    "selectDocumentsDir": "Stellaris のドキュメントフォルダーを選択",
+    "selectLauncherDb": "launcher-v2.sqlite ファイルを選択",
+    "sqliteFilter": "SQLite データベース"
+  },
+  "pathsTitle": "環境パス",
+  "settingsTitle": "生成設定",
+  "paths": {
+    "gameRoot": "1. Stellaris のインストール先",
+    "documentsDir": "2. ドキュメントフォルダー（Paradox Interactive）",
+    "launcherDb": "3. ランチャーデータベース（launcher-v2.sqlite）",
+    "outputDir": "4. 出力フォルダー"
+  },
+  "placeholders": {
+    "gameRoot": "Stellaris のインストール先が未設定です",
+    "documentsDir": "ドキュメントフォルダーが未設定です",
+    "launcherDb": "ランチャーデータベースが未設定です",
+    "outputDir": "アプリケーションフォルダー"
+  },
+  "outputDirBadge": "アプリのフォルダー"
+}
