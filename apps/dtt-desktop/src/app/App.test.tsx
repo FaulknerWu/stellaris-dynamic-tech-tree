@@ -1,18 +1,20 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { Children, isValidElement, type ComponentProps, type ComponentType, type ReactElement, type ReactNode } from "react";
-import type { BootstrapDataDto, EnvironmentDto, InspectedSaveDto, SaveIndexDto, SaveLibraryDto } from "@/ipc/bindings";
+import type { BootstrapDataDto, EnvironmentDto, InspectedSaveDto, SaveLibraryDto } from "@/ipc/bindings";
 import { SaveAndEmpirePage } from "@/features/saves/SaveAndEmpirePage";
 import { EnvironmentAndSettingsPage } from "@/features/settings/EnvironmentAndSettingsPage";
 import { App } from "./App";
 import { AppShell } from "./AppShell";
 import { INITIAL_SESSION_STATE, sessionReducer, type SessionAction, type SessionState } from "./session";
 import { DEFAULT_PERSISTED_DATA } from "./store";
+import { createEnvironment, createReadySession, createSave as save } from "./test-fixtures";
 
 const harness = vi.hoisted(() => ({
   state: null as SessionState | null,
   refs: [] as Array<{ current: unknown }>,
   refIndex: 0,
   effects: [] as Array<() => void | (() => void)>,
+  cleanups: [] as Array<() => void>,
   dispatch: vi.fn<(action: SessionAction) => void>(),
   scan: vi.fn(), inspect: vi.fn(), persist: vi.fn(), resolve: vi.fn(), bootstrap: vi.fn(), generate: vi.fn(),
 }));
@@ -42,9 +44,8 @@ vi.mock("@/ipc/commands", () => ({
   getBootstrapData: harness.bootstrap, runGeneration: harness.generate, cancelGeneration: vi.fn(), openOutputDirectory: vi.fn(),
 }));
 
-const environment: EnvironmentDto = { gameRoot: "game", documentsDir: "documents", launcherDb: "launcher.sqlite", steamLibraries: [] };
+const environment = createEnvironment();
 const inspection: InspectedSaveDto = { playerCountries: [{ countryId: 1 }] };
-const save = (path: string): SaveIndexDto => ({ path, fileName: path, modifiedAtMillis: 0, fileSize: 1, state: "text" });
 const library = (path: string): SaveLibraryDto => ({ diagnostics: [], accounts: [{ campaigns: [{ key: path, saves: [save(path)] }] }] });
 
 function deferred<T>() {
@@ -54,10 +55,18 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
-function render() {
+// Exercise callback races directly; mount effects only for bootstrap scenarios.
+function render({ mountEffects = false } = {}) {
   harness.refIndex = 0;
   harness.effects = [];
-  return App({ persisted: DEFAULT_PERSISTED_DATA, initialSaveFailed: false }) as ReactElement<ComponentProps<typeof AppShell>>;
+  const tree = App({ persisted: structuredClone(DEFAULT_PERSISTED_DATA), initialSaveFailed: false }) as ReactElement<ComponentProps<typeof AppShell>>;
+  if (mountEffects) {
+    for (const effect of harness.effects) {
+      const cleanup = effect();
+      if (cleanup) harness.cleanups.push(cleanup);
+    }
+  }
+  return tree;
 }
 
 function pageProps<P>(tree: ReactElement<{ children: ReactNode }>, component: ComponentType<P>): P {
@@ -69,13 +78,17 @@ function pageProps<P>(tree: ReactElement<{ children: ReactNode }>, component: Co
 beforeEach(() => {
   vi.resetAllMocks();
   harness.refs = [];
-  harness.state = { ...INITIAL_SESSION_STATE, step: "saves", environment };
+  harness.state = { ...structuredClone(INITIAL_SESSION_STATE), step: "saves", environment: createEnvironment() };
   harness.dispatch.mockImplementation(action => { harness.state = sessionReducer(harness.state!, action); });
   harness.inspect.mockResolvedValue(inspection);
   harness.persist.mockResolvedValue(undefined);
   harness.scan.mockResolvedValue({ diagnostics: [], accounts: [] });
 });
-afterEach(() => { vi.useRealTimers(); });
+afterEach(() => {
+  for (const cleanup of harness.cleanups.splice(0)) cleanup();
+  vi.clearAllTimers();
+  vi.useRealTimers();
+});
 
 it("ignores every side effect of a superseded library scan", async () => {
   const local = deferred<SaveLibraryDto>();
@@ -159,18 +172,16 @@ it("does not let late bootstrap data restart a scan after a path change", async 
   harness.state = { ...INITIAL_SESSION_STATE };
   const pending = deferred<BootstrapDataDto>();
   harness.bootstrap.mockReturnValueOnce(pending.promise);
-  const page = pageProps(render(), EnvironmentAndSettingsPage);
-  const cleanup = harness.effects[1]!();
+  const page = pageProps(render({ mountEffects: true }), EnvironmentAndSettingsPage);
   page.onResolveEnvironment({ ...INITIAL_SESSION_STATE.overrides, gameRoot: "new" });
   pending.resolve({ environment, outputDirectory: "output" });
   await pending.promise;
   expect(harness.state?.environment).toBeNull();
   expect(harness.scan).not.toHaveBeenCalled();
-  cleanup?.();
 });
 
 it("rejects starting generation while environment validation is incomplete", async () => {
-  harness.state = { ...harness.state!, environment: null, selectedSave: save("save.sav"), selectedSavePath: "save.sav" };
+  harness.state = { ...createReadySession(), environment: null };
   await render().props.onStartGeneration();
   expect(harness.generate).not.toHaveBeenCalled();
 });

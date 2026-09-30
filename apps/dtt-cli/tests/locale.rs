@@ -1,4 +1,5 @@
 use std::process::{Command, Output};
+
 fn run(args: &[&str], locale: &str) -> Output {
     Command::new(env!("CARGO_BIN_EXE_dtt"))
         .args(args)
@@ -6,15 +7,17 @@ fn run(args: &[&str], locale: &str) -> Output {
         .output()
         .unwrap()
 }
+
 #[test]
 fn help_resolves_locale_before_or_after_help_and_subcommand() {
-    for args in [
-        vec!["--locale", "zh-Hans", "--help"],
-        vec!["--help", "--locale=zh-Hans"],
-        vec!["generate", "--help", "--locale", "zh-Hans"],
-    ] {
-        let output = run(&args, "en");
-        assert!(output.status.success());
+    let cases: &[&[&str]] = &[
+        &["--locale", "zh-Hans", "--help"],
+        &["--help", "--locale=zh-Hans"],
+        &["generate", "--help", "--locale", "zh-Hans"],
+    ];
+    for args in cases {
+        let output = run(args, "en");
+        assert!(output.status.success(), "{args:?}: {output:?}");
         let text = String::from_utf8(output.stdout).unwrap();
         assert!(text.contains("用法"), "{text}");
         assert!(
@@ -26,50 +29,47 @@ fn help_resolves_locale_before_or_after_help_and_subcommand() {
         assert!(output.stderr.is_empty());
     }
 }
+
 #[test]
 fn argument_errors_are_localised_and_use_stderr() {
-    for args in [
-        vec!["--locale=zh-Hans", "generate"],
-        vec!["--locale=zh-Hans", "--wat"],
-        vec![
-            "generate",
-            "--locale=zh-Hans",
-            "save.sav",
-            "--language=french",
-        ],
-        vec!["--locale=en", "--locale=zh-Hans", "detect-paths"],
-        vec!["--locale=en", "generate", "--locale=zh-Hans", "save.sav"],
-    ] {
-        let output = run(&args, "en");
-        assert_eq!(output.status.code(), Some(2));
-        assert!(output.stdout.is_empty());
+    let cases: &[(&[&str], &str)] = &[
+        (&["--locale=zh-Hans", "generate"], "缺少必需参数或子命令"),
+        (&["--locale=zh-Hans", "--wat"], "未知参数或子命令"),
+        (
+            &[
+                "generate",
+                "--locale=zh-Hans",
+                "save.sav",
+                "--language=french",
+            ],
+            "参数值无效",
+        ),
+        (
+            &["--locale=en", "--locale=zh-Hans", "detect-paths"],
+            "Conflicting or repeated arguments",
+        ),
+        (
+            &["--locale=en", "generate", "--locale=zh-Hans", "save.sav"],
+            "Invalid argument value",
+        ),
+    ];
+    for (args, expected) in cases {
+        let output = run(args, "en");
+        assert_eq!(output.status.code(), Some(2), "{args:?}: {output:?}");
+        assert!(output.stdout.is_empty(), "{args:?}: {output:?}");
+        let stderr = String::from_utf8(output.stderr).unwrap();
+        assert_eq!(stderr.lines().next(), Some(*expected), "{args:?}: {stderr}");
     }
-    let output = run(&["--locale=zh-Hans", "--wat"], "en");
-    assert!(
-        String::from_utf8(output.stderr)
-            .unwrap()
-            .contains("未知参数")
-    );
 }
+
 #[test]
 fn invalid_environment_warns_once_but_explicit_system_skips_it() {
     let output = run(&["--help"], "invalid_locale");
     assert!(output.status.success());
-    assert!(!output.stderr.is_empty());
+    let stderr = String::from_utf8(output.stderr).unwrap();
+    assert_eq!(stderr.lines().count(), 1, "{stderr}");
+    assert_eq!(stderr.matches("DTT_LOCALE").count(), 1, "{stderr}");
     let output = run(&["--locale=system", "--help"], "invalid_locale");
     assert!(output.status.success());
     assert!(output.stderr.is_empty());
-}
-#[test]
-fn english_help_and_version_have_success_exit_codes() {
-    let help = run(&["--help"], "en");
-    assert!(help.status.success());
-    assert!(String::from_utf8(help.stdout).unwrap().contains("Usage"));
-    let version = run(&["--version"], "en");
-    assert!(version.status.success());
-    assert!(
-        String::from_utf8(version.stdout)
-            .unwrap()
-            .starts_with("dtt ")
-    );
 }

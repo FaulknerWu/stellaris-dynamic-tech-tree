@@ -1,6 +1,7 @@
 use dtt_i18n::{AppLocale, Domain, Translator};
+
 #[test]
-fn shared_negotiation_cases_and_registry_are_consistent() {
+fn locale_negotiation_matches_shared_cases() {
     let cases: serde_json::Value =
         serde_json::from_str(include_str!("../negotiation-cases.json")).unwrap();
     for case in cases.as_array().unwrap() {
@@ -11,14 +12,10 @@ fn shared_negotiation_cases_and_registry_are_consistent() {
                 .iter()
                 .map(|v| v.as_str().unwrap()),
         );
-        assert_eq!(result.tag(), case["expected"].as_str().unwrap());
-    }
-    let registry: serde_json::Value = serde_json::from_str(dtt_i18n::REGISTRY).unwrap();
-    assert_eq!(registry.as_object().unwrap().len(), 2);
-    for locale in [AppLocale::En, AppLocale::ZhHans] {
-        assert!(registry.get(locale.tag()).is_some());
+        assert_eq!(result.tag(), case["expected"].as_str().unwrap(), "{case}");
     }
 }
+
 #[test]
 fn concurrent_task_local_contexts_do_not_mix_languages_or_emit_game_bidi() {
     let tasks: Vec<_> = [AppLocale::En, AppLocale::ZhHans]

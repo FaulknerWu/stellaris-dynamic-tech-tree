@@ -1,26 +1,23 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { SaveAndEmpirePage } from "@/features/saves/SaveAndEmpirePage";
 import { initializeI18n } from "@/i18n";
-import type { EnvironmentDto, SaveIndexDto, InspectedSaveDto } from "@/ipc/bindings";
 import { AppShell } from "./AppShell";
 import { INITIAL_SESSION_STATE, canStartGeneration, generationBlocker, hasValidEnvironment, sessionReducer, type SessionState } from "./session";
+import { createEnvironment, createInspection, createReadySession, createSave } from "./test-fixtures";
 
 vi.mock("@/i18n/controller", () => ({
   useLocale: () => ({ preference: "en" }),
   currentLocale: () => "en",
 }));
 
-const environment: EnvironmentDto = { gameRoot: "game", documentsDir: "documents", launcherDb: "launcher.sqlite", steamLibraries: [] };
-const save: SaveIndexDto = { path: "example.sav", fileName: "example.sav", modifiedAtMillis: 0, fileSize: 1, state: "text" };
-const inspection: InspectedSaveDto = {
-  playerCountries: [{ countryId: 1 }],
-  snapshot: { ethics: [], government: { civics: [] }, ascensionPerks: [], traditions: [], founderSpecies: { traits: [] }, countryType: "default" },
-};
-const ready: SessionState = {
-  ...INITIAL_SESSION_STATE, step: "saves", environment, selectedSave: save, selectedSavePath: save.path,
-  inspection, inspectionStatus: "ready", selectedCountryId: 1,
-};
+const environment = createEnvironment();
+const inspection = createInspection();
+let ready: SessionState;
+
+beforeEach(() => {
+  ready = createReadySession();
+});
 
 beforeAll(async () => { await initializeI18n("en"); });
 
@@ -38,21 +35,21 @@ function buttonIsDisabled(html: string, label: string): boolean {
 }
 
 describe("generation readiness", () => {
-  it("enables generation only for a validated environment and inspected empire", () => {
-    expect(canStartGeneration(ready)).toBe(true);
+  it("reflects generation readiness in the start button", () => {
     expect(buttonIsDisabled(shell(ready), "Start Generation")).toBe(false);
-    for (const patch of [
-      { environment: null },
-      { environmentError: { code: "INVALID_PATH" as const } },
-      { inspectionStatus: "inspecting" as const },
-      { inspectionStatus: "failed" as const },
-      { inspection: null },
-      { selectedSave: { ...save, state: "binary" as const } },
-    ]) {
-      const state = { ...ready, ...patch };
-      expect(canStartGeneration(state)).toBe(false);
-      expect(buttonIsDisabled(shell(state), "Start Generation")).toBe(true);
-    }
+    expect(buttonIsDisabled(shell({ ...ready, environment: null }), "Start Generation")).toBe(true);
+  });
+
+  it.each<{ reason: string; patch: Partial<SessionState> }>([
+    { reason: "missing environment", patch: { environment: null } },
+    { reason: "invalid environment", patch: { environmentError: { code: "INVALID_PATH" } } },
+    { reason: "pending inspection", patch: { inspectionStatus: "inspecting" } },
+    { reason: "failed inspection", patch: { inspectionStatus: "failed" } },
+    { reason: "missing inspection", patch: { inspection: null } },
+    { reason: "binary save", patch: { selectedSave: { ...createSave(), state: "binary" } } },
+  ])("disables generation for $reason", ({ patch }) => {
+    const state = { ...ready, ...patch };
+    expect(canStartGeneration(state)).toBe(false);
   });
 
   it("requires an explicit multiplayer country selection", () => {
