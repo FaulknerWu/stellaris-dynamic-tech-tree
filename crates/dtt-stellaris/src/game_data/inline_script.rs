@@ -123,7 +123,7 @@ fn expand_field(
             subject,
             DefinitionIssue::InvalidInlineCall,
         ));
-        return Vec::new();
+        return unresolved_inline(field);
     };
     let key = normalise_script_key(&name);
     if !stack.insert(key.clone()) {
@@ -135,7 +135,7 @@ fn expand_field(
                 script: key.clone(),
             },
         ));
-        return Vec::new();
+        return unresolved_inline(field);
     }
     let expanded = match scripts.get(&key) {
         Some(body) => {
@@ -151,11 +151,19 @@ fn expand_field(
                     script: key.clone(),
                 },
             ));
-            Vec::new()
+            unresolved_inline(field)
         }
     };
     stack.remove(&key);
     expanded
+}
+
+fn unresolved_inline(field: &CwField) -> Vec<CwEntry> {
+    vec![CwEntry::Field(CwField {
+        key: field.key.clone(),
+        operator: field.operator,
+        value: CwValue::Malformed,
+    })]
 }
 
 fn expand_value(

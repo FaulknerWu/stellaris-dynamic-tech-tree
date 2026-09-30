@@ -110,10 +110,10 @@ fn run() -> Result<u8, dtt_i18n::TranslationError> {
     }
     let result = match cli.command {
         Commands::Generate(args) => commands::generate::run(args, locale, &t),
-        Commands::DetectPaths => commands::detect_paths::run(&t),
+        Commands::DetectPaths => commands::detect_paths::run(&t).map(|()| 0),
     };
     match result {
-        Ok(()) => Ok(0),
+        Ok(code) => Ok(code),
         Err(error) => {
             let errors = Translator::new(locale, Domain::Errors)?;
             use dtt_i18n::ErrorMessage as E;

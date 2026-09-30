@@ -153,6 +153,7 @@ export type EnglishResources = {
     },
     "civicBadge": "Civic",
     "playerCountrySwitch": "Player country",
+    "selectCountryHint": "Choose a player country to inspect its empire.",
     "selectSaveHint": "Select a valid non-ironman text save from the list on the left",
     "detail": "Details",
     "showLess": "Show less",

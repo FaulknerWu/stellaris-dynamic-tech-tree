@@ -10,7 +10,7 @@ pub fn run(
     args: GenerateArgs,
     locale: dtt_i18n::AppLocale,
     t: &dtt_i18n::Translator,
-) -> Result<()> {
+) -> Result<u8> {
     use dtt_i18n::CliMessage as M;
     let settings = resolve_generation_settings(&ResolveGenerationSettingsRequest {
         stellaris_root: args.stellaris_root,
@@ -109,7 +109,10 @@ pub fn run(
     for failure in result.output.failed {
         println!("  {}: {}", failure.path, failure.technical_detail);
     }
-    Ok(())
+    Ok(match result.output.status {
+        GenerationStatus::Success => 0,
+        GenerationStatus::Incomplete => 1,
+    })
 }
 
 impl From<CliUnknownStrategy> for UnknownStrategy {

@@ -34,6 +34,7 @@
   },
   "civicBadge": "国策",
   "playerCountrySwitch": "玩家国家切换",
+  "selectCountryHint": "请选择一个玩家国家以查看其帝国信息。",
   "selectSaveHint": "请在左侧列表中选择一个有效的非铁人文本存档",
   "detail": "详细",
   "showLess": "收起",

@@ -408,6 +408,55 @@ export function SaveAndEmpirePage({
         title={t($ => $.empireTitle, { ns: "saves" })}
         icon={Sparkles}
       >
+        {playerCandidates.length > 1 && (
+          <div className="flex items-center justify-between pb-1">
+            <span className="text-body font-medium text-muted-foreground">
+              {t($ => $.playerCountrySwitch, { ns: "empire" })}
+            </span>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 max-w-44 shrink-0 gap-1.5 truncate text-body"
+                  >
+                    <User className="size-3" />
+                    <span className="truncate">
+                      {state.selectedCountryId === null
+                        ? t($ => $.playerCountrySwitch, { ns: "empire" })
+                        : t($ => $.countryLabel, { ns: "empire", id: state.selectedCountryId })}
+                    </span>
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="end" className="w-56 text-body">
+                {playerCandidates.map((candidate) => (
+                  <DropdownMenuItem
+                    key={candidate.countryId}
+                    onClick={() => {
+                      dispatch({
+                        type: "SELECT_COUNTRY_ID",
+                        countryId: candidate.countryId,
+                      });
+                      onInspectWithCountry(candidate.countryId);
+                    }}
+                    className="justify-between"
+                  >
+                    <span>
+                      {t($ => $.countryLabel, { ns: "empire", id: candidate.countryId })}
+                    </span>
+                    {state.selectedCountryId === candidate.countryId && (
+                      <Check className="size-3 stroke-[3] text-primary" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+
         {isInspecting ? (
           <div className="space-y-2 py-6">
             <div className="flex items-center justify-center gap-2 text-body text-muted-foreground">
@@ -421,55 +470,6 @@ export function SaveAndEmpirePage({
           <ErrorAlert error={state.inspectionError} />
         ) : snapshot ? (
           <div className="space-y-3">
-            {playerCandidates.length > 1 && (
-              <div className="flex items-center justify-between pb-1">
-                <span className="text-body font-medium text-muted-foreground">
-                  {t($ => $.playerCountrySwitch, { ns: "empire" })}
-                </span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-7 max-w-44 shrink-0 gap-1.5 truncate text-body"
-                      >
-                        <User className="size-3" />
-                        <span className="truncate">
-                          {t($ => $.countryLabel, { ns: "empire",
-                            id: state.selectedCountryId ?? playerCandidates[0]?.countryId ?? 0,
-                          })}
-                        </span>
-                      </Button>
-                    }
-                  />
-                  <DropdownMenuContent align="end" className="w-56 text-body">
-                    {playerCandidates.map((candidate) => (
-                      <DropdownMenuItem
-                        key={candidate.countryId}
-                        onClick={() => {
-                          dispatch({
-                            type: "SELECT_COUNTRY_ID",
-                            countryId: candidate.countryId,
-                          });
-                          onInspectWithCountry(candidate.countryId);
-                        }}
-                        className="justify-between"
-                      >
-                        <span>
-                          {t($ => $.countryLabel, { ns: "empire", id: candidate.countryId })}
-                        </span>
-                        {state.selectedCountryId === candidate.countryId && (
-                          <Check className="size-3 stroke-[3] text-primary" />
-                        )}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
-
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div className="rounded-lg bg-surface p-2 text-center">
                 <div className="text-meta text-muted-foreground">
@@ -624,7 +624,9 @@ export function SaveAndEmpirePage({
           </div>
         ) : (
           <div className="py-16 text-center text-body text-muted-foreground">
-            {t($ => $.selectSaveHint, { ns: "empire" })}
+            {playerCandidates.length > 1
+              ? t($ => $.selectCountryHint, { ns: "empire" })
+              : t($ => $.selectSaveHint, { ns: "empire" })}
           </div>
         )}
       </Panel>

@@ -14,6 +14,9 @@ mod scripted_trigger;
 mod scripted_variable;
 mod technology;
 
+#[cfg(test)]
+mod tests;
+
 pub use diagnostic::{
     DefinitionIssue, GameDataCategory, GameDataDiagnostic, GameDataDiagnosticKind, Ingested,
 };

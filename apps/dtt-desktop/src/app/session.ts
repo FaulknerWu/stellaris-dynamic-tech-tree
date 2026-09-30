@@ -96,6 +96,32 @@ export const INITIAL_SESSION_STATE: SessionState = {
   envSeq: 0,
 };
 
+export function hasValidEnvironment(state: SessionState): boolean {
+  return state.environment !== null && state.environmentError === null;
+}
+
+export function generationBlocker(
+  state: SessionState,
+): "environment" | "language" | "save" | "invalidSave" | "empire" | null {
+  if (!hasValidEnvironment(state)) return "environment";
+  if (state.settings.languages.length === 0) return "language";
+  if (!state.selectedSavePath) return "save";
+  if (state.selectedSave?.state !== "text") return "invalidSave";
+  if (
+    state.inspectionStatus !== "ready" ||
+    !state.inspection?.snapshot ||
+    (state.inspection.playerCountries.length > 1 && state.selectedCountryId === null)
+  ) return "empire";
+  return null;
+}
+
+export function canStartGeneration(state: SessionState): boolean {
+  return state.step === "saves" &&
+    state.run.status !== "running" &&
+    state.run.status !== "cancelling" &&
+    generationBlocker(state) === null;
+}
+
 export type SessionAction =
   | { type: "BOOTSTRAP_START" }
   | { type: "BOOTSTRAP_SUCCESS"; data: BootstrapDataDto }
@@ -151,11 +177,15 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
             }
           : null;
 
+      const canUseDetected = state.envSeq === 0 &&
+        Object.values(state.overrides).every(value => value === null);
       return {
         ...state,
         bootstrap: { status: "ready", data: action.data },
-        environment: state.environment ?? initialEnv,
-        environmentError: state.environmentError ?? (action.data.environmentError || null),
+        environment: state.environment ?? (canUseDetected ? initialEnv : null),
+        environmentError: state.envSeq === 0
+          ? (action.data.environmentError || null)
+          : state.environmentError,
       };
     }
 
@@ -180,6 +210,8 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case "SET_OVERRIDE":
       return {
         ...state,
+        environment: null,
+        environmentError: null,
         overrides: {
           ...state.overrides,
           [action.key]: action.value,
@@ -189,6 +221,9 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case "RESOLVE_ENV_START":
       return {
         ...state,
+        environment: null,
+        environmentError: null,
+        libraryStatus: "idle",
         envSeq: action.seq,
       };
 

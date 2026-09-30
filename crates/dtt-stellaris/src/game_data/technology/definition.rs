@@ -60,6 +60,9 @@ pub(super) fn extract(
 ) -> Option<Extracted> {
     let id = Id::from(name);
     diagnose_fields(name, object, source, diagnostics);
+    if object.first_field("inline_script").is_some() {
+        return None;
+    }
 
     let Some(area) = first_scalar(object, "area", inputs)
         .as_deref()
@@ -267,6 +270,9 @@ fn swaps_from(
             ));
             continue;
         };
+        if swap.first_field("inline_script").is_some() {
+            continue;
+        }
         let Some(active_id) = first_scalar(swap, "name", inputs).map(Id::from) else {
             diagnostics.push(definition_diagnostic(
                 source,

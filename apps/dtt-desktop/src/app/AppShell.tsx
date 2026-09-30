@@ -38,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { SessionState, WizardStep } from "./session";
+import { canStartGeneration, generationBlocker, hasValidEnvironment } from "./session";
 import type { ThemePreference } from "./store";
 
 interface AppShellProps {
@@ -74,33 +75,25 @@ export function AppShell({
 
   let disabledReason: string | null = null;
   if (state.step === "settings") {
-    const hasDetected =
-      state.bootstrap.status === "ready" &&
-      !!state.bootstrap.data.environment.gameRoot &&
-      !!state.bootstrap.data.environment.documentsDir;
-    if (!state.environment && !hasDetected) {
+    if (!hasValidEnvironment(state)) {
       disabledReason = t($ => $.hints.needEnvironment, { ns: "common" });
     } else if (state.settings.languages.length === 0) {
       disabledReason = t($ => $.barriers.needLanguage, { ns: "generation" });
     }
   } else if (state.step === "saves") {
-    if (!state.selectedSavePath) {
-      disabledReason = t($ => $.barriers.needSave, { ns: "generation" });
-    } else if (state.selectedSave?.state !== "text") {
-      disabledReason = t($ => $.barriers.invalidSave, { ns: "generation" });
-    } else if (!state.inspection?.snapshot) {
-      disabledReason = t($ => $.barriers.needEmpire, { ns: "generation" });
+    switch (generationBlocker(state)) {
+      case "environment": disabledReason = t($ => $.hints.needEnvironment, { ns: "common" }); break;
+      case "language": disabledReason = t($ => $.barriers.needLanguage, { ns: "generation" }); break;
+      case "save": disabledReason = t($ => $.barriers.needSave, { ns: "generation" }); break;
+      case "invalidSave": disabledReason = t($ => $.barriers.invalidSave, { ns: "generation" }); break;
+      case "empire": disabledReason = t($ => $.barriers.needEmpire, { ns: "generation" }); break;
     }
   }
 
   const canProceedFromSettings =
-    state.step === "settings" && state.settings.languages.length > 0;
+    state.step === "settings" && hasValidEnvironment(state) && state.settings.languages.length > 0;
 
-  const canStartFromSaves =
-    state.step === "saves" &&
-    !!state.selectedSavePath &&
-    state.selectedSave?.state === "text" &&
-    !!state.inspection?.snapshot;
+  const canStartFromSaves = canStartGeneration(state);
 
   const selectedSaveName =
     state.selectedSave?.metadata?.name ||

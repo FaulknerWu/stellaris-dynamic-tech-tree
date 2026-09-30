@@ -17,3 +17,8 @@ dtt-i18n.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 dtt-application.workspace = true
+
+[dev-dependencies]
+rusqlite.workspace = true
+zip.workspace = true
+tempfile = "3"

@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -39,7 +40,7 @@ pub(crate) fn manifest_files<'a>(
                 .filter(|file| !manifest.is_shadowed_by_replace(&file.relative_path, source.index)),
         );
     }
-    Ok(files)
+    Ok(effective_files(files))
 }
 
 pub(crate) fn manifest_direct_files<'a>(
@@ -56,7 +57,15 @@ pub(crate) fn manifest_direct_files<'a>(
                 .filter(|file| !manifest.is_shadowed_by_replace(&file.relative_path, source.index)),
         );
     }
-    Ok(files)
+    Ok(effective_files(files))
+}
+
+fn effective_files(mut files: Vec<ManifestFile<'_>>) -> Vec<ManifestFile<'_>> {
+    let mut seen = HashSet::new();
+    files.reverse();
+    files.retain(|file| seen.insert(file.relative_path.clone()));
+    files.reverse();
+    files
 }
 
 fn files_for_source<'a>(

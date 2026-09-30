@@ -27,6 +27,7 @@ import { EnvironmentAndSettingsPage } from "@/features/settings/EnvironmentAndSe
 import { AppShell } from "./AppShell";
 import {
   INITIAL_SESSION_STATE,
+  canStartGeneration,
   sessionReducer,
   type SessionState,
   type WizardStep,
@@ -49,93 +50,46 @@ export function App({ persisted, initialSaveFailed }: { persisted: PersistedData
   const scanSeqRef = useRef(0);
   const inspectSeqRef = useRef(0);
   const envSeqRef = useRef(0);
+  const selectionSeqRef = useRef(0);
+  const selectedSaveRef = useRef(state.selectedSave);
+  const saveSourceRef = useRef(state.saveSource);
   const resolveDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
+  const handleInspectSave = useCallback(
+    async (save: SaveIndexDto, countryId?: number) => {
+      const seq = ++inspectSeqRef.current;
+      dispatch({ type: "INSPECT_SAVE_START", seq });
 
-    async function init() {
-      dispatch({ type: "BOOTSTRAP_START" });
-
-      if (!mounted) return;
-
-      setCurrentTheme(persisted.uiTheme);
-      applyTheme(persisted.uiTheme);
-
+      const request: InspectSaveRequestDto = {
+        saveFile: save.path,
+      };
+      if (countryId !== undefined) {
+        request.countryId = countryId;
+      }
 
       try {
-        const bootstrap = await getBootstrapData();
-        if (!mounted) return;
-        dispatch({ type: "BOOTSTRAP_SUCCESS", data: bootstrap });
-
-        const hasOverrides =
-          persisted.overrides.gameRoot !== null ||
-          persisted.overrides.documentsDir !== null ||
-          persisted.overrides.launcherDb !== null;
-
-        if (hasOverrides) {
-          handleResolveEnvironment(persisted.overrides);
-        } else if (!bootstrap.environmentError) {
-          handleScanLibrary(
-            persisted.saveSource,
-            bootstrap.environment.documentsDir,
-            bootstrap.environment.steamLibraries,
-          );
-        }
+        const inspected = await inspectSave(request);
+        if (seq !== inspectSeqRef.current) return;
+        dispatch({ type: "INSPECT_SAVE_SUCCESS", inspection: inspected, seq });
       } catch (err: any) {
-        if (!mounted) return;
-        dispatch({ type: "BOOTSTRAP_FAIL", error: err });
+        if (seq !== inspectSeqRef.current) return;
+        dispatch({ type: "INSPECT_SAVE_FAIL", error: err, seq });
       }
-    }
-
-    init();
-
-    return () => {
-      mounted = false;
-      if (resolveDebounceTimerRef.current) {
-        clearTimeout(resolveDebounceTimerRef.current);
-      }
-    };
-  }, []);
-
-  const handleResolveEnvironment = useCallback(
-    (
-      overrides: SessionState["overrides"],
-    ) => {
-      if (resolveDebounceTimerRef.current) {
-        clearTimeout(resolveDebounceTimerRef.current);
-      }
-
-      resolveDebounceTimerRef.current = setTimeout(async () => {
-        const seq = ++envSeqRef.current;
-        dispatch({ type: "RESOLVE_ENV_START", seq });
-
-        try {
-          const request: {
-            gameRoot?: string;
-            documentsDir?: string;
-            launcherDb?: string;
-          } = {};
-          if (overrides.gameRoot) request.gameRoot = overrides.gameRoot;
-          if (overrides.documentsDir) request.documentsDir = overrides.documentsDir;
-          if (overrides.launcherDb) request.launcherDb = overrides.launcherDb;
-
-          const env = await resolveEnvironment(request);
-
-          dispatch({ type: "RESOLVE_ENV_SUCCESS", environment: env, seq });
-          savePersistedData({ overrides });
-
-          handleScanLibrary(
-            state.saveSource,
-            env.documentsDir,
-            env.steamLibraries,
-          );
-        } catch (err: any) {
-          dispatch({ type: "RESOLVE_ENV_FAIL", error: err, seq });
-        }
-      }, 300);
     },
-    [state.saveSource],
+    [],
+  );
+
+  const handleSelectSave = useCallback(
+    (save: SaveIndexDto) => {
+      ++selectionSeqRef.current;
+      ++inspectSeqRef.current;
+      selectedSaveRef.current = save;
+      dispatch({ type: "SELECT_SAVE", save });
+      if (save.state === "text") {
+        handleInspectSave(save);
+      }
+    },
+    [handleInspectSave],
   );
 
   const handleScanLibrary = useCallback(
@@ -144,8 +98,10 @@ export function App({ persisted, initialSaveFailed }: { persisted: PersistedData
       docsDirOverride?: string,
       steamLibsOverride?: string[],
     ) => {
-      const source = sourceOverride ?? state.saveSource;
+      const source = sourceOverride ?? saveSourceRef.current;
+      saveSourceRef.current = source;
       const seq = ++scanSeqRef.current;
+      const selectionSeq = selectionSeqRef.current;
       dispatch({ type: "SCAN_LIBRARY_START", seq });
 
       const docsDir =
@@ -171,54 +127,118 @@ export function App({ persisted, initialSaveFailed }: { persisted: PersistedData
 
       try {
         const lib = await scanSaveLibrary(request);
+        if (seq !== scanSeqRef.current) return;
         dispatch({ type: "SCAN_LIBRARY_SUCCESS", library: lib, seq });
         savePersistedData({ saveSource: source });
 
-        if (!state.selectedSavePath && lib.accounts.length > 0) {
+        if (
+          selectionSeq === selectionSeqRef.current &&
+          !selectedSaveRef.current && lib.accounts.length > 0
+        ) {
           const firstSave = lib.accounts[0]?.campaigns[0]?.saves[0];
           if (firstSave && firstSave.state === "text") {
-            dispatch({ type: "SELECT_SAVE", save: firstSave });
-            handleInspectSave(firstSave);
+            handleSelectSave(firstSave);
           }
         }
       } catch (err: any) {
+        if (seq !== scanSeqRef.current) return;
         dispatch({ type: "SCAN_LIBRARY_FAIL", error: err, seq });
       }
     },
-    [state.saveSource, state.overrides.documentsDir, state.environment, state.bootstrap, state.selectedSavePath],
+    [state.overrides.documentsDir, state.environment, state.bootstrap, handleSelectSave],
   );
 
-  const handleInspectSave = useCallback(
-    async (save: SaveIndexDto, countryId?: number) => {
-      const seq = ++inspectSeqRef.current;
-      dispatch({ type: "INSPECT_SAVE_START", seq });
-
-      const request: InspectSaveRequestDto = {
-        saveFile: save.path,
-      };
-      if (countryId !== undefined) {
-        request.countryId = countryId;
+  const handleResolveEnvironment = useCallback(
+    (overrides: SessionState["overrides"]) => {
+      if (resolveDebounceTimerRef.current) {
+        clearTimeout(resolveDebounceTimerRef.current);
       }
+
+      const seq = ++envSeqRef.current;
+      ++scanSeqRef.current;
+      dispatch({ type: "RESOLVE_ENV_START", seq });
+      resolveDebounceTimerRef.current = setTimeout(async () => {
+        try {
+          const request: {
+            gameRoot?: string;
+            documentsDir?: string;
+            launcherDb?: string;
+          } = {};
+          if (overrides.gameRoot) request.gameRoot = overrides.gameRoot;
+          if (overrides.documentsDir) request.documentsDir = overrides.documentsDir;
+          if (overrides.launcherDb) request.launcherDb = overrides.launcherDb;
+
+          const env = await resolveEnvironment(request);
+          if (seq !== envSeqRef.current) return;
+
+          dispatch({ type: "RESOLVE_ENV_SUCCESS", environment: env, seq });
+          savePersistedData({ overrides });
+
+          handleScanLibrary(
+            saveSourceRef.current,
+            env.documentsDir,
+            env.steamLibraries,
+          );
+        } catch (err: any) {
+          if (seq !== envSeqRef.current) return;
+          dispatch({ type: "RESOLVE_ENV_FAIL", error: err, seq });
+        }
+      }, 300);
+    },
+    [handleScanLibrary],
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    const envSeq = envSeqRef.current;
+    const scanSeq = scanSeqRef.current;
+
+    async function init() {
+      dispatch({ type: "BOOTSTRAP_START" });
+
+      if (!mounted) return;
+
+      setCurrentTheme(persisted.uiTheme);
+      applyTheme(persisted.uiTheme);
 
       try {
-        const inspected = await inspectSave(request);
-        dispatch({ type: "INSPECT_SAVE_SUCCESS", inspection: inspected, seq });
-      } catch (err: any) {
-        dispatch({ type: "INSPECT_SAVE_FAIL", error: err, seq });
-      }
-    },
-    [],
-  );
+        const bootstrap = await getBootstrapData();
+        if (!mounted) return;
+        dispatch({ type: "BOOTSTRAP_SUCCESS", data: bootstrap });
+        if (envSeq !== envSeqRef.current) return;
 
-  const handleSelectSave = useCallback(
-    (save: SaveIndexDto) => {
-      dispatch({ type: "SELECT_SAVE", save });
-      if (save.state === "text") {
-        handleInspectSave(save);
+        const hasOverrides =
+          persisted.overrides.gameRoot !== null ||
+          persisted.overrides.documentsDir !== null ||
+          persisted.overrides.launcherDb !== null;
+
+        if (hasOverrides) {
+          handleResolveEnvironment(persisted.overrides);
+        } else if (!bootstrap.environmentError && scanSeq === scanSeqRef.current) {
+          handleScanLibrary(
+            saveSourceRef.current,
+            bootstrap.environment.documentsDir,
+            bootstrap.environment.steamLibraries,
+          );
+        }
+      } catch (err: any) {
+        if (!mounted) return;
+        dispatch({ type: "BOOTSTRAP_FAIL", error: err });
       }
-    },
-    [handleInspectSave],
-  );
+    }
+
+    init();
+
+    return () => {
+      mounted = false;
+      ++envSeqRef.current;
+      ++scanSeqRef.current;
+      ++inspectSeqRef.current;
+      if (resolveDebounceTimerRef.current) {
+        clearTimeout(resolveDebounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleInspectWithCountry = useCallback(
     (countryId: number) => {
@@ -230,7 +250,7 @@ export function App({ persisted, initialSaveFailed }: { persisted: PersistedData
   );
 
   const handleStartGeneration = useCallback(async () => {
-    if (!state.selectedSavePath || !state.environment) {
+    if (!canStartGeneration(state) || !state.selectedSavePath || !state.environment) {
       return;
     }
 
@@ -276,12 +296,7 @@ export function App({ persisted, initialSaveFailed }: { persisted: PersistedData
         dispatch({ type: "GENERATION_FAIL", error: err });
       }
     }
-  }, [
-    state.selectedSavePath,
-    state.selectedCountryId,
-    state.environment,
-    state.settings,
-  ]);
+  }, [state]);
 
   const handleCancelGeneration = useCallback(async () => {
     dispatch({ type: "CANCEL_GENERATION_START" });
@@ -314,6 +329,9 @@ export function App({ persisted, initialSaveFailed }: { persisted: PersistedData
       onCancelGeneration={handleCancelGeneration}
       onOpenOutputDirectory={openOutputDirectory}
       onChangeSave={() => {
+        ++selectionSeqRef.current;
+        ++inspectSeqRef.current;
+        selectedSaveRef.current = null;
         dispatch({ type: "RESET_SAVE_SELECTION" });
       }}
       onChangeLocale={setLocalePreference}
