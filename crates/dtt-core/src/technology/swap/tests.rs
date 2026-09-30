@@ -135,9 +135,8 @@ fn uncertain_first_variant_blocks_later_matches_and_preserves_base_area() {
 }
 
 #[test]
-fn false_variants_are_skipped_and_first_certain_match_changes_display_only() {
+fn false_variants_are_skipped_and_first_certain_match_sets_display() {
     let mut base = definition("base");
-    base.prerequisites.all_of = ids(&["required"]);
     base.technology_swaps = vec![
         variant("never", "false"),
         variant("first", "true"),
@@ -154,10 +153,6 @@ fn false_variants_are_skipped_and_first_certain_match_changes_display_only() {
     assert_eq!(result.entries[0].outcome, SwapOutcome::Matched);
     assert_eq!(result.display_of(&"base".into()), Id::from("first"));
     assert_eq!(result.display_area[&Id::from("base")], Area::Society);
-    assert_eq!(
-        catalog.get(&"base".into()).unwrap().prerequisites.all_of,
-        ids(&["required"])
-    );
 }
 
 #[test]

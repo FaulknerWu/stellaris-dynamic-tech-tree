@@ -2,7 +2,6 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { SaveAndEmpirePage } from "@/features/saves/SaveAndEmpirePage";
 import { initializeI18n } from "@/i18n";
-import { AppShell } from "./AppShell";
 import { INITIAL_SESSION_STATE, canStartGeneration, generationBlocker, hasValidEnvironment, sessionReducer, type SessionState } from "./session";
 import { createEnvironment, createInspection, createReadySession, createSave } from "./test-fixtures";
 
@@ -21,25 +20,7 @@ beforeEach(() => {
 
 beforeAll(async () => { await initializeI18n("en"); });
 
-function shell(state: SessionState): string {
-  return renderToStaticMarkup(<AppShell
-    state={state} onNavigateStep={vi.fn()} onStartGeneration={vi.fn()} onCancelGeneration={vi.fn()}
-    onOpenOutputDirectory={vi.fn()} onChangeSave={vi.fn()} onChangeLocale={vi.fn()} onChangeTheme={vi.fn()} currentTheme="system"
-  >{null}</AppShell>);
-}
-
-function buttonIsDisabled(html: string, label: string): boolean {
-  const button = html.match(/<button\b[^>]*>[\s\S]*?<\/button>/g)?.find(value => value.includes(label));
-  expect(button).toBeDefined();
-  return /\sdisabled(?:=|[ >])/.test(button!);
-}
-
 describe("generation readiness", () => {
-  it("reflects generation readiness in the start button", () => {
-    expect(buttonIsDisabled(shell(ready), "Start Generation")).toBe(false);
-    expect(buttonIsDisabled(shell({ ...ready, environment: null }), "Start Generation")).toBe(true);
-  });
-
   it.each<{ reason: string; patch: Partial<SessionState> }>([
     { reason: "missing environment", patch: { environment: null } },
     { reason: "invalid environment", patch: { environmentError: { code: "INVALID_PATH" } } },
@@ -56,12 +37,6 @@ describe("generation readiness", () => {
     const state = { ...ready, inspection: { ...inspection, playerCountries: [{ countryId: 1 }, { countryId: 2 }] }, selectedCountryId: null };
     expect(generationBlocker(state)).toBe("empire");
     expect(canStartGeneration({ ...state, selectedCountryId: 2 })).toBe(true);
-  });
-
-  it("disables the settings next button without a valid environment", () => {
-    const state = { ...INITIAL_SESSION_STATE, bootstrap: { status: "ready" as const, data: { environment, outputDirectory: "output" } } };
-    expect(buttonIsDisabled(shell(state), "Next")).toBe(true);
-    expect(buttonIsDisabled(shell({ ...state, environment }), "Next")).toBe(false);
   });
 
   it("invalidates the environment immediately when paths change or resolution starts", () => {

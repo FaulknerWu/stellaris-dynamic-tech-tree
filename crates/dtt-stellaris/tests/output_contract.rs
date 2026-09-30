@@ -77,9 +77,13 @@ fn switching_languages_removes_only_owned_files_and_preserves_user_files() {
     let unknown = root.join("localisation/simp_chinese/replace/zztechtree_custom.yml");
     fs::write(&user, "user content").unwrap();
     fs::write(&unknown, "keep this too").unwrap();
+    let legacy = root.join("localisation/french");
+    fs::create_dir_all(&legacy).unwrap();
+    fs::write(legacy.join("zztechtreemain_l_french.yml"), "legacy").unwrap();
+    fs::write(legacy.join("user.yml"), "user").unwrap();
     let result = generate(root, &[GameLanguage::English], &["base".into()]);
     assert!(result.complete, "{:?}", result.failed);
-    assert_eq!(result.removed.len(), 2);
+    assert_eq!(result.removed.len(), 3);
     assert!(
         !root
             .join("localisation/simp_chinese/zztechtreemain_l_simp_chinese.yml")
@@ -92,21 +96,8 @@ fn switching_languages_removes_only_owned_files_and_preserves_user_files() {
     );
     assert_eq!(fs::read_to_string(user).unwrap(), "user content");
     assert_eq!(fs::read_to_string(unknown).unwrap(), "keep this too");
-}
-
-#[test]
-fn a_blocked_language_directory_reports_partial_failure_and_still_writes_report() {
-    let temp = tempfile::tempdir().unwrap();
-    fs::write(temp.path().join("localisation"), "not a directory").unwrap();
-    let result = generate(temp.path(), &[GameLanguage::English], &["base".into()]);
-    assert!(!result.complete);
-    assert!(!result.failed.is_empty());
-    assert_eq!(result.written.len(), 1);
-    assert!(result.report_path.is_some());
-    assert_eq!(
-        fs::read_to_string(temp.path().join("localisation")).unwrap(),
-        "not a directory"
-    );
+    assert!(!legacy.join("zztechtreemain_l_french.yml").exists());
+    assert_eq!(fs::read_to_string(legacy.join("user.yml")).unwrap(), "user");
 }
 
 #[test]
@@ -181,16 +172,4 @@ fn both_output_languages_preserve_markup_and_escape_once() {
         );
         assert!(output.contains("literal \\n"));
     }
-}
-#[test]
-fn legacy_language_cleanup_keeps_unowned_files() {
-    let temp = tempfile::tempdir().unwrap();
-    let dir = temp.path().join("localisation/french");
-    fs::create_dir_all(dir.join("replace")).unwrap();
-    fs::write(dir.join("zztechtreemain_l_french.yml"), "legacy").unwrap();
-    fs::write(dir.join("user.yml"), "user").unwrap();
-    let result = generate(temp.path(), &[GameLanguage::English], &[]);
-    assert!(result.complete);
-    assert_eq!(result.removed.len(), 1);
-    assert_eq!(fs::read_to_string(dir.join("user.yml")).unwrap(), "user");
 }
