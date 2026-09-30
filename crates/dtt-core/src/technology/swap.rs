@@ -8,6 +8,8 @@ use crate::condition::{
 use crate::technology::{Area, Catalog, Definition, Id};
 use crate::{Error, Result};
 
+mod coverage;
+
 #[cfg(test)]
 mod tests;
 
@@ -103,8 +105,12 @@ fn resolve_one(
     let base_id = &def.id;
     let mut unknown_triggers = BTreeMap::new();
     let mut deferred_triggers: BTreeMap<String, usize> = BTreeMap::new();
+    let mut display = None;
+    let mut same_display = true;
+    let mut possible_triggers = Vec::new();
+    let mut exhaustive = false;
 
-    for (idx, variant) in def.technology_swaps.iter().enumerate() {
+    for variant in &def.technology_swaps {
         let evaluation = variant.trigger.evaluate_detailed(context);
         for diagnostic in evaluation.unknown_triggers {
             *unknown_triggers.entry(diagnostic.reason).or_default() += diagnostic.occurrences;
@@ -112,38 +118,44 @@ fn resolve_one(
         for diagnostic in evaluation.deferred_triggers {
             *deferred_triggers.entry(diagnostic.name).or_default() += diagnostic.occurrences;
         }
-        if evaluation.bounds.guaranteed == TruthValue::True {
-            return Ok(SwapEntry {
-                base_id: base_id.clone(),
-                active_id: variant.active_id.clone(),
-                area: variant.area.unwrap_or(def.area),
-                outcome: SwapOutcome::Matched,
-                unknown_triggers: collect_unknown_triggers(unknown_triggers),
-                deferred_triggers: collect_deferred_triggers(deferred_triggers),
-            });
+        if evaluation.bounds.possible == TruthValue::False {
+            continue;
         }
-        if evaluation.bounds.possible != TruthValue::False {
-            if matches!(unknown_strategy, SwapUnknownStrategy::Error) {
-                return Err(Error::RuleEngine(format!(
-                    "科技 `{base_id}` 的 technology_swap[{idx}] 无法根据开局身份确定是否匹配"
-                )));
-            }
-            return Ok(SwapEntry {
-                base_id: base_id.clone(),
-                active_id: base_id.clone(),
-                area: def.area,
-                outcome: SwapOutcome::Uncertain,
-                unknown_triggers: collect_unknown_triggers(unknown_triggers),
-                deferred_triggers: collect_deferred_triggers(deferred_triggers),
-            });
+        let candidate = (variant.active_id.clone(), variant.area.unwrap_or(def.area));
+        if let Some(previous) = &display {
+            same_display &= *previous == candidate;
+        } else {
+            display = Some(candidate);
+        }
+        possible_triggers.push(&variant.trigger.condition);
+        if evaluation.bounds.guaranteed == TruthValue::True {
+            exhaustive = true;
+            break;
         }
     }
 
+    let (active_id, area, outcome) = match display {
+        None => (base_id.clone(), def.area, SwapOutcome::NoMatch),
+        Some((active_id, area))
+            if same_display
+                && (exhaustive || coverage::covers_all(&possible_triggers, context)) =>
+        {
+            (active_id, area, SwapOutcome::Matched)
+        }
+        Some(_) => {
+            if matches!(unknown_strategy, SwapUnknownStrategy::Error) {
+                return Err(Error::RuleEngine(format!(
+                    "科技 `{base_id}` 的 technology_swap 无法确定显示名称与领域"
+                )));
+            }
+            (base_id.clone(), def.area, SwapOutcome::Uncertain)
+        }
+    };
     Ok(SwapEntry {
         base_id: base_id.clone(),
-        active_id: base_id.clone(),
-        area: def.area,
-        outcome: SwapOutcome::NoMatch,
+        active_id,
+        area,
+        outcome,
         unknown_triggers: collect_unknown_triggers(unknown_triggers),
         deferred_triggers: collect_deferred_triggers(deferred_triggers),
     })

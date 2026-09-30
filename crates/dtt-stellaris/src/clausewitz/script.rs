@@ -46,6 +46,7 @@ pub(crate) enum ScriptArgument {
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct ScriptParameter {
     pub name: String,
+    pub operator: ComparisonOperator,
     pub value: String,
 }
 
@@ -350,6 +351,7 @@ fn object_argument(trigger: &str, object: &CwObject, ctx: &mut ConversionCtx) ->
                 match &field.value {
                     CwValue::Scalar(scalar) => parameters.push(ScriptParameter {
                         name: field.key.clone(),
+                        operator: field.operator,
                         value: scalar.clone(),
                     }),
                     _ => nested = true,

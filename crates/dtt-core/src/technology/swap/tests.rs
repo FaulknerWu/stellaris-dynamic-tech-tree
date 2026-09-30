@@ -1,6 +1,102 @@
 use super::*;
+use crate::condition::{Condition, UnknownConditionReason};
 use crate::technology::SwapVariant;
 use crate::test_support::{Context, catalog, compiled, definition, ids, leaf};
+
+#[test]
+fn identical_displays_resolve_when_a_later_variant_guarantees_coverage() {
+    let mut base = definition("base");
+    base.technology_swaps = vec![
+        variant("same", "future"),
+        variant("same", "true"),
+        variant("unreachable", "true"),
+    ];
+    let catalog = catalog([base]);
+    let result = resolve_swaps(
+        &catalog,
+        &ids(&["base"]),
+        &Context,
+        SwapUnknownStrategy::Error,
+    )
+    .unwrap();
+    assert_eq!(result.entries[0].outcome, SwapOutcome::Matched);
+    assert_eq!(result.display_of(&"base".into()), Id::from("same"));
+}
+
+#[test]
+fn complementary_future_guards_can_determine_a_common_display() {
+    let mut first = variant("same", "future");
+    first.trigger = compiled(Condition::All(vec![
+        leaf("true"),
+        Condition::Not(Box::new(leaf("future"))),
+    ]));
+    let mut last = variant("same", "future");
+    last.trigger = compiled(Condition::All(vec![leaf("true"), leaf("future")]));
+    let mut base = definition("base");
+    base.technology_swaps = vec![first, variant("unreachable", "false"), last];
+    let result = resolve_swaps(
+        &catalog([base]),
+        &ids(&["base"]),
+        &Context,
+        SwapUnknownStrategy::Error,
+    )
+    .unwrap();
+    assert_eq!(result.entries[0].outcome, SwapOutcome::Matched);
+    assert_eq!(result.display_of(&"base".into()), Id::from("same"));
+    assert_eq!(result.display_area[&Id::from("base")], Area::Society);
+}
+
+#[test]
+fn equal_names_with_different_areas_remain_uncertain() {
+    let mut first = variant("same", "future");
+    first.area = Some(Area::Engineering);
+    let mut base = definition("base");
+    base.technology_swaps = vec![first, variant("same", "true")];
+    let result = resolve_swaps(
+        &catalog([base]),
+        &ids(&["base"]),
+        &Context,
+        SwapUnknownStrategy::KeepBase,
+    )
+    .unwrap();
+    assert_eq!(result.entries[0].outcome, SwapOutcome::Uncertain);
+    assert_eq!(result.entries[0].area, Area::Physics);
+}
+
+#[test]
+fn repeated_future_guards_do_not_eliminate_the_base_fallback() {
+    let mut base = definition("base");
+    base.technology_swaps = vec![variant("same", "future"), variant("same", "future")];
+    let result = resolve_swaps(
+        &catalog([base]),
+        &ids(&["base"]),
+        &Context,
+        SwapUnknownStrategy::KeepBase,
+    )
+    .unwrap();
+    assert_eq!(result.entries[0].outcome, SwapOutcome::Uncertain);
+    assert_eq!(result.entries[0].active_id, Id::from("base"));
+}
+
+#[test]
+fn unsupported_complements_do_not_prove_variant_coverage() {
+    let unknown = Condition::Unknown(UnknownConditionReason::Trigger("unsupported".into()));
+    let mut first = variant("same", "future");
+    first.trigger = compiled(unknown.clone());
+    let mut second = first.clone();
+    second.trigger = compiled(Condition::Not(Box::new(unknown)));
+    let mut base = definition("base");
+    base.technology_swaps = vec![first, second];
+    let result = resolve_swaps(
+        &catalog([base]),
+        &ids(&["base"]),
+        &Context,
+        SwapUnknownStrategy::KeepBase,
+    )
+    .unwrap();
+    assert_eq!(result.entries[0].outcome, SwapOutcome::Uncertain);
+    assert!(!result.entries[0].unknown_triggers.is_empty());
+}
 
 fn variant(active_id: &str, predicate: &str) -> SwapVariant {
     SwapVariant {

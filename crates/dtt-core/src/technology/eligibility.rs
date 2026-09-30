@@ -149,10 +149,29 @@ pub fn evaluate_eligibility(
         }
     }
 
-    let mut uncertain: Vec<Id> = uncertain
-        .into_iter()
-        .filter(|id| candidates.contains(id))
+    let mut guaranteed: HashSet<Id> = candidates.difference(&uncertain).cloned().collect();
+    let mut queue: VecDeque<Id> = order
+        .iter()
+        .filter(|id| guaranteed.contains(*id))
+        .filter(|id| missing_prereqs(&prerequisites[*id], &guaranteed).is_some())
+        .cloned()
         .collect();
+    while let Some(id) = queue.pop_front() {
+        if !guaranteed.contains(&id) || missing_prereqs(&prerequisites[&id], &guaranteed).is_none()
+        {
+            continue;
+        }
+        guaranteed.remove(&id);
+        if let Some(downstream) = dependents.get(&id) {
+            queue.extend(
+                downstream
+                    .iter()
+                    .filter(|id| guaranteed.contains(*id))
+                    .cloned(),
+            );
+        }
+    }
+    let mut uncertain: Vec<Id> = candidates.difference(&guaranteed).cloned().collect();
     uncertain.sort();
 
     let mut eligible: Vec<Id> = candidates.into_iter().collect();

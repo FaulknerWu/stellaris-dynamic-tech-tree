@@ -177,9 +177,16 @@ pub struct Predicate {
 pub enum PredicateArgument {
     None,
     Scalar(String),
-    Parameters(Vec<(String, String)>),
+    Parameters(Vec<PredicateParameter>),
     Structured { keys: Vec<String> },
     Malformed,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PredicateParameter {
+    pub name: String,
+    pub operator: ComparisonOperator,
+    pub value: String,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

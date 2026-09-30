@@ -156,7 +156,7 @@ fn both_output_languages_preserve_markup_and_escape_once() {
         .map(|language| (language, HashMap::from([(id.clone(), value.into())])))
         .collect();
     let result = write(&WriteRequest {
-        eligible: &[id.clone()],
+        eligible: std::slice::from_ref(&id),
         render_results_by_language: &HashMap::new(),
         original_descriptions_by_language: &descriptions,
         tiers: &HashMap::new(),

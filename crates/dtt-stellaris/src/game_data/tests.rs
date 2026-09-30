@@ -8,6 +8,8 @@ use super::load_game_data;
 use crate::analysis::World;
 use crate::load_order::{Manifest, SourceEntry};
 
+mod conditions;
+
 struct Fixture {
     _directory: tempfile::TempDir,
     manifest: Manifest,

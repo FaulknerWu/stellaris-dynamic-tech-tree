@@ -118,7 +118,7 @@ Rust 调用方可使用 `RunGenerationRequest::from_snapshot` 直接提供快照
 
 ### 条件结构与作用域
 
-`Condition` 包含 `All`、`Any`、`Not`、`If`、`Scope`、`AnyObject`、`Scripted`、`Predicate` 和 `Unknown`。谓词保留名称、运算符与参数；脚本调用节点保留调用链，便于定位诊断。
+`Condition` 包含 `All`、`Any`、`Not`、`If`、`Scope`、`AnyObject`、`Scripted`、`Predicate` 和 `Unknown`。谓词保留名称、运算符与参数；平面参数块的每个字段也保留自己的运算符，避免混淆 `value = 0` 与 `value > 0`。脚本调用的替换参数只允许赋值运算符；脚本调用节点保留调用链，便于定位诊断。
 
 相邻 `if` 分别求值，`else_if` 和 `else` 延续当前分支链。空 `AND` 为真，空 `OR` 为假，`always = no` 为确定禁用。求值只访问可达分支，并在诊断中保留作用域和调用路径。
 
@@ -145,6 +145,8 @@ Rust 调用方可使用 `RunGenerationRequest::from_snapshot` 直接提供快照
 
 过程性策略涵盖时间、通信、危机、DNA、联邦、标记、遗珍、议案、资源、DLC、科技、飞升天赋、传统、附属关系、对象存在、局势类型和政策。DLC 按全路线展示策略保留；未绑定变量和畸形参数记为 Unknown。过程性诊断归入 `deferred_triggers`，语义未知的条件归入 `unknown_triggers`。
 
+`has_dna` 接受必需的 `ship_category` 和可选的 `rarity`；`resource_expenses_compare` 接受必需的 `resource`、数值比较字段 `value` 和可选的 `category`。合法参数块按过程性条件处理；缺失字段、重复或未知字段、错误运算符、非有限数值和不支持的嵌套结构仍记为 Unknown。
+
 该算法计算局部逻辑边界。跨节点的事件互斥、谓词相关性和完整事件可达性属于分析范围之外，因此结果可能包含实际难以同时满足的组合。身份基准固定为生成时快照，飞升和物种转化后的身份需通过新的快照重新分析。
 
 ### 科技资格
@@ -157,14 +159,17 @@ Rust 调用方可使用 `RunGenerationRequest::from_snapshot` 直接提供快照
 
 未知策略针对语义或数据的未知状态，过程性门槛仍按未来可能性处理。依赖图的边仅来自 `prerequisites`，条件内的 `has_technology` 参与求值策略。
 
+候选集合收敛后，再从其中的确定项计算前置闭包：所有必需前置、每个 OR 组中的至少一个选项都确定时，本项才保持确定。不确定性沿多级依赖传播；OR 组存在确定选项时，不受组内其他不确定项影响。此阶段使用同一份归一化前置关系，包含变体 ID 别名。
+
 ### 显示变体
 
 变体与资格共用求值引擎，选择时遵循声明顺序：
 
 1. `possible = False` 时继续检查下一项。
-2. `guaranteed = True` 时选中当前项，使用其显示 ID 和可选领域，记录 `Matched`。
-3. 当前项可能匹配、确定性尚未成立时，默认 `keep_base` 停止选择并保留基础显示，记录 `Uncertain`；`error` 策略中断生成。
-4. 所有项均被排除时记录 `NoMatch`。
+2. 收集可能匹配的显示 ID 和有效领域，遇到 `guaranteed = True` 后不再访问后续声明。
+3. 所有候选的显示 ID 和领域相同，且能够证明至少一项必定匹配时，记录 `Matched`。证明包括确定匹配项，以及消去固定身份条件后的互补未来条件；作用域和脚本上下文保持完整，不用语义未知条件证明互补。
+4. 无法证明显示结果确定时，默认 `keep_base` 保留基础显示并记录 `Uncertain`；`error` 策略中断生成。仅有相同名称但领域不同，或仍可能没有任何变体匹配，都不能据此确定显示。
+5. 所有项均被排除时记录 `NoMatch`。
 
 `Uncertain` 保留基础 ID、领域和依赖。显示 ID 冲突会作为错误处理。报告和桌面界面分别统计三种变体结果。
 

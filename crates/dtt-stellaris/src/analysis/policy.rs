@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use dtt_core::condition::ContextReason;
 use dtt_core::condition::{
     ComparisonOperator, Predicate, PredicateArgument, PredicateEvaluation, UnknownConditionReason,
@@ -201,11 +203,16 @@ fn process(predicate: &Predicate, context: &AnalysisContext<'_>) -> PredicateEva
         return context.unknown(name, reason.clone());
     }
     let valid_argument = match &predicate.argument {
-        PredicateArgument::Scalar(value) => {
-            !value.is_empty()
-                && !value.starts_with('@')
-                && !value.contains('$')
-                && (!matches!(name, "days_passed" | "has_crisis_level" | "has_dna")
+        PredicateArgument::Parameters(fields)
+            if matches!(name, "has_dna" | "resource_expenses_compare") =>
+        {
+            valid_process_parameters(name, fields)
+        }
+        PredicateArgument::Scalar(value)
+            if !matches!(name, "has_dna" | "resource_expenses_compare") =>
+        {
+            bound_scalar(value)
+                && (!matches!(name, "days_passed" | "has_crisis_level")
                     || value.parse::<f64>().is_ok_and(f64::is_finite))
                 && (!matches!(name, "has_federation" | "is_subject")
                     || matches!(value.as_str(), "yes" | "no"))
@@ -218,7 +225,7 @@ fn process(predicate: &Predicate, context: &AnalysisContext<'_>) -> PredicateEva
     if !matches!(
         predicate.operator,
         ComparisonOperator::Equal | ComparisonOperator::NotEqual
-    ) && !(matches!(name, "days_passed" | "has_crisis_level" | "has_dna")
+    ) && !(matches!(name, "days_passed" | "has_crisis_level")
         && matches!(
             predicate.operator,
             ComparisonOperator::LessThan
@@ -233,4 +240,50 @@ fn process(predicate: &Predicate, context: &AnalysisContext<'_>) -> PredicateEva
         });
     }
     PredicateEvaluation::deferred(name)
+}
+
+fn bound_scalar(value: &str) -> bool {
+    !value.trim().is_empty() && !value.starts_with('@') && !value.contains('$')
+}
+
+fn valid_process_parameters(
+    name: &str,
+    fields: &[dtt_core::condition::PredicateParameter],
+) -> bool {
+    let required: &[&str] = match name {
+        "has_dna" => &["ship_category"],
+        "resource_expenses_compare" => &["resource", "value"],
+        _ => return false,
+    };
+    if !required
+        .iter()
+        .all(|name| fields.iter().any(|field| field.name == *name))
+    {
+        return false;
+    }
+    let mut seen = HashSet::new();
+    fields.iter().all(|field| {
+        if !seen.insert(&field.name) || !bound_scalar(&field.value) {
+            return false;
+        }
+        match (name, field.name.as_str()) {
+            ("has_dna", "ship_category" | "rarity")
+            | ("resource_expenses_compare", "resource" | "category") => {
+                field.operator == ComparisonOperator::Equal
+            }
+            ("resource_expenses_compare", "value") => {
+                field.value.parse::<f64>().is_ok_and(f64::is_finite)
+                    && matches!(
+                        field.operator,
+                        ComparisonOperator::Equal
+                            | ComparisonOperator::NotEqual
+                            | ComparisonOperator::LessThan
+                            | ComparisonOperator::LessThanOrEqual
+                            | ComparisonOperator::GreaterThan
+                            | ComparisonOperator::GreaterThanOrEqual
+                    )
+            }
+            _ => false,
+        }
+    })
 }

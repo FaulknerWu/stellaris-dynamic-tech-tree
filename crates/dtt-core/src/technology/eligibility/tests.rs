@@ -3,6 +3,70 @@ use crate::condition::{Condition, UnknownConditionReason};
 use crate::technology::{Definition, SwapVariant};
 use crate::test_support::{Context, catalog, compiled, definition, ids, leaf};
 
+#[test]
+fn uncertain_prerequisites_propagate_through_multiple_dependency_levels() {
+    for condition in [
+        leaf("future"),
+        Condition::Unknown(UnknownConditionReason::Trigger("unsupported".into())),
+    ] {
+        let mut root = definition("z_root");
+        root.potential = Some(compiled(condition));
+        let mut child = definition("a_child");
+        child.prerequisites.all_of = ids(&["z_root"]);
+        let mut grandchild = definition("b_grandchild");
+        grandchild.prerequisites.all_of = ids(&["a_child"]);
+        let result = eligible(vec![grandchild, child, root, definition("independent")]);
+        assert_eq!(
+            result.uncertain,
+            ids(&["a_child", "b_grandchild", "z_root"])
+        );
+        assert_eq!(result.eligible.len(), 4);
+    }
+}
+
+#[test]
+fn each_or_group_needs_a_certain_alternative_to_avoid_uncertainty() {
+    let mut future = definition("future");
+    future.potential = Some(compiled(leaf("future")));
+    let mut certain_choice = definition("certain_choice");
+    certain_choice.prerequisites.any_of_groups = vec![ids(&["future", "certain"])];
+    let mut uncertain_group = definition("uncertain_group");
+    uncertain_group.prerequisites.any_of_groups =
+        vec![ids(&["future", "certain"]), ids(&["future", "absent"])];
+    let mut uncertain_required = definition("uncertain_required");
+    uncertain_required.prerequisites.all_of = ids(&["future"]);
+    uncertain_required.prerequisites.any_of_groups = vec![ids(&["future", "certain"])];
+    let result = eligible(vec![
+        future,
+        definition("certain"),
+        certain_choice,
+        uncertain_group,
+        uncertain_required,
+    ]);
+    assert_eq!(
+        result.uncertain,
+        ids(&["future", "uncertain_group", "uncertain_required"])
+    );
+    assert!(result.excluded_prereq.is_empty());
+}
+
+#[test]
+fn uncertainty_crosses_swap_aliases_and_cycles_without_looping() {
+    let mut root = definition("root");
+    root.potential = Some(compiled(leaf("future")));
+    root.technology_swaps.push(SwapVariant {
+        active_id: "alias".into(),
+        trigger: compiled(leaf("true")),
+        area: None,
+    });
+    let mut a = definition("a");
+    a.prerequisites.all_of = ids(&["alias", "b"]);
+    let mut b = definition("b");
+    b.prerequisites.all_of = ids(&["a"]);
+    let result = eligible(vec![a, b, root]);
+    assert_eq!(result.uncertain, ids(&["a", "b", "root"]));
+}
+
 fn eligible(definitions: Vec<Definition>) -> EligibilityReport {
     evaluate_eligibility(
         &catalog(definitions),

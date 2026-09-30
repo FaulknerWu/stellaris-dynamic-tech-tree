@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use dtt_core::condition::{
     ComparisonOperator, CompiledCondition, Condition, ConditionBranch, Predicate,
-    PredicateArgument, UnknownConditionReason,
+    PredicateArgument, PredicateParameter, UnknownConditionReason,
 };
 
 use crate::clausewitz::script::{Script, ScriptArgument, ScriptParameter};
@@ -104,7 +104,11 @@ fn lower_call(
         ScriptArgument::Parameters(fields) => PredicateArgument::Parameters(
             fields
                 .into_iter()
-                .map(|field| (field.name, field.value))
+                .map(|field| PredicateParameter {
+                    name: field.name,
+                    operator: field.operator,
+                    value: field.value,
+                })
                 .collect(),
         ),
         ScriptArgument::Structured { keys } => PredicateArgument::Structured { keys },
@@ -186,6 +190,7 @@ fn bind_argument(argument: &ScriptArgument, ctx: &LowerCtx<'_, '_>) -> Option<Sc
             .map(|parameter| {
                 Some(ScriptParameter {
                     name: bind_text(&parameter.name, ctx)?,
+                    operator: parameter.operator,
                     value: bind_text(&parameter.value, ctx)?,
                 })
             })
@@ -198,13 +203,21 @@ fn scripted_parameters(argument: &ScriptArgument) -> Option<HashMap<String, Stri
     match argument {
         ScriptArgument::Scalar(value) if value == "yes" || value == "no" => Some(HashMap::new()),
         ScriptArgument::None | ScriptArgument::Scalar(_) => None,
-        ScriptArgument::Parameters(fields) => Some(
-            fields
+        ScriptArgument::Parameters(fields)
+            if fields
                 .iter()
-                .map(|parameter| (parameter.name.clone(), parameter.value.clone()))
-                .collect(),
-        ),
-        ScriptArgument::Malformed | ScriptArgument::Structured { .. } => None,
+                .all(|field| field.operator == ComparisonOperator::Equal) =>
+        {
+            Some(
+                fields
+                    .iter()
+                    .map(|parameter| (parameter.name.clone(), parameter.value.clone()))
+                    .collect(),
+            )
+        }
+        ScriptArgument::Parameters(_)
+        | ScriptArgument::Malformed
+        | ScriptArgument::Structured { .. } => None,
     }
 }
 
