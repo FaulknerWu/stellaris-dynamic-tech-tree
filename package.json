@@ -3,6 +3,8 @@
   "private": true,
   "packageManager": "pnpm@12.8.1",
   "scripts": {
+    "ci": "cargo fmt --all --check && cargo check --workspace --locked && cargo test --workspace --locked && pnpm bindings && git diff --exit-code -- apps/dtt-desktop/src/ipc/bindings && pnpm i18n:check && pnpm desktop:test && pnpm desktop:build && cargo build --workspace --locked",
+    "ci:unix": "cargo test --workspace --locked --exclude dtt-desktop",
     "bindings": "pnpm --filter dtt-desktop bindings",
     "desktop:build": "pnpm --filter dtt-desktop build",
     "desktop:dev": "pnpm --filter dtt-desktop tauri dev",
