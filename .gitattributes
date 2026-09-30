@@ -1,0 +1,2 @@
+# Generated translation types are compared with deterministic LF output.
+apps/dtt-desktop/src/i18n/resource-types.generated.ts text eol=lf
