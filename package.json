@@ -1,7 +1,7 @@
 {
   "name": "dtt-rs",
   "private": true,
-  "packageManager": "pnpm@11.24.0",
+  "packageManager": "pnpm@12.8.1",
   "scripts": {
     "bindings": "pnpm --filter dtt-desktop bindings",
     "desktop:build": "pnpm --filter dtt-desktop build",

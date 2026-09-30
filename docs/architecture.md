@@ -17,7 +17,7 @@
 
 业务依赖方向为 `{ dtt-cli, dtt-desktop } → dtt-application → { dtt-core, dtt-stellaris }`，以及 `dtt-stellaris → dtt-core`。CLI、应用层和 Stellaris 输出适配器使用 `dtt-i18n`。核心领域层通过通用数据和回调与适配层协作；文件系统、ZIP、SQLite、Jomini 和翻译运行时集中在外围模块。
 
-Rust workspace 使用 2024 edition，工具链由 `rust-toolchain.toml` 固定为 `1.98.0`。主要依赖包括 `jomini 0.35`、`zip 8`、`rusqlite 0.40`、`clap 4.5`、`thiserror 2` 和 `anyhow 1`；具体约束见根目录及各 crate 的 `Cargo.toml`。桌面端说明见 [前端开发说明](frontend.md)。
+Rust workspace 使用 2024 edition，工具链由 `rust-toolchain.toml` 固定为 `1.98.0`。主要依赖包括 `jomini 0.37`、`zip 8`、`rusqlite 0.40`、`clap 4.6`、`thiserror 2` 和 `anyhow 1`；具体约束见根目录及各 crate 的 `Cargo.toml`。桌面端说明见 [前端开发说明](frontend.md)。
 
 ## 生成流程
 

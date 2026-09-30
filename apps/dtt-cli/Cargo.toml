@@ -21,4 +21,4 @@ dtt-application.workspace = true
 [dev-dependencies]
 rusqlite.workspace = true
 zip.workspace = true
-tempfile = "3"
+tempfile = "3.27.0"

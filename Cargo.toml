@@ -19,27 +19,27 @@ description = "Stellaris Dynamic Technology Tree MOD generator"
 repository = "https://github.com/FaulknerWu/stellaris-dynamic-tech-tree"
 
 [workspace.dependencies]
-fluent-bundle = "0.16"
-icu_locale_core = { version = "2.3", features = ["alloc"] }
-sys-locale = "0.3"
+fluent-bundle = "0.16.0"
+icu_locale_core = { version = "2.3.0", features = ["alloc"] }
+sys-locale = "0.3.2"
 dtt-i18n = { path = "crates/dtt-i18n" }
-serde = { version = "1", features = ["derive", "rc"] }
-thiserror = "2"
-anyhow = "1"
-clap = { version = "4.5", features = ["derive", "string"] }
-jomini = { version = "0.35", default-features = false }
-rusqlite = { version = "0.40", features = ["bundled"] }
-zip = { version = "8", default-features = false, features = ["deflate"] }
+serde = { version = "1.0.229", features = ["derive", "rc"] }
+thiserror = "2.0.21"
+anyhow = "1.0.104"
+clap = { version = "4.6.7", features = ["derive", "string"] }
+jomini = { version = "0.37.1", default-features = false }
+rusqlite = { version = "0.40.2", features = ["bundled"] }
+zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
 atomic-write-file = "0.3.1"
-tokio = { version = "1", features = ["sync"] }
-tauri = "2.11.5"
-tauri-build = "2.6.3"
-tauri-plugin-dialog = "2.7.2"
-tauri-plugin-opener = "2.5.4"
-tauri-plugin-store = "2.4.4"
+tokio = { version = "1.53.1", features = ["sync"] }
+tauri = "2.12.0"
+tauri-build = "2.7.0"
+tauri-plugin-dialog = "2.8.0"
+tauri-plugin-opener = "2.7.0"
+tauri-plugin-store = "2.5.0"
 ts-rs = "12.0.1"
-dirs = "6"
-winreg = "0.56"
+dirs = "7.0.0"
+winreg = "0.56.0"
 dtt-core = { path = "crates/dtt-core" }
 dtt-stellaris = { path = "crates/dtt-stellaris" }
 dtt-application = { path = "crates/dtt-application" }
