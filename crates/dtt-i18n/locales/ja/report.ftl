@@ -1,0 +1,17 @@
+report-title = DTT 生成レポート
+report-missing-mods = MOD 記述ファイルの欠落
+report-eligible = 対象の技術
+report-uncertain = 対象かどうか不確定
+report-excluded-identity = 帝国の初期情報に基づき除外
+report-excluded-prerequisite = 前提技術の依存関係に基づき除外
+report-unknown = 不明な条件
+report-deferred = 判定を保留した条件（将来の可能性を保持）
+report-game-data = ゲームデータの診断
+report-definitions = 定義内の未処理のフィールド
+report-localisation = ゲームのローカライズ診断
+report-self-cycles = 自己参照
+report-cycles = 循環依存
+report-swap-matched = 一致した置き換え
+report-swap-no-match = 一致しなかった置き換え
+report-swap-uncertain = 不確定な置き換え（基本技術の表示を維持）
+report-technical = 技術的な詳細

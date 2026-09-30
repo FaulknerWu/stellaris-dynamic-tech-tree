@@ -1,0 +1,73 @@
+{
+  "outputLanguages": {
+    "title": "出力言語",
+    "description": "MOD に書き込むローカライズの言語です。アプリの表示言語とは別に設定します。",
+    "hint": "出力言語を少なくとも1つ選択してください",
+    "items": {
+      "english": "English",
+      "simp_chinese": "简体中文",
+      "japanese": "日本語",
+      "russian": "Русский"
+    },
+    "selectedCount_other": "{{count, number}} 言語を選択中"
+  },
+  "advanced": {
+    "unknownStrategy": {
+      "title": "不明な条件の処理",
+      "description": "判定できないトリガー条件を持つ技術の扱いを指定します",
+      "includeFlagged": {
+        "label": "含めて印を付ける（推奨）"
+      },
+      "excludeStrict": {
+        "label": "厳密に除外する"
+      },
+      "error": {
+        "label": "エラーとして扱う"
+      }
+    },
+    "swapUnknownStrategy": {
+      "title": "不確定な派生技術の処理",
+      "description": "初期の帝国情報から派生技術を特定できない場合、基本技術の表示を維持するか処理を停止します",
+      "keepBase": {
+        "label": "基本技術を維持する"
+      },
+      "error": {
+        "label": "エラーとして扱う"
+      }
+    }
+  },
+  "failure": {
+    "title": "生成失敗・エラーレポート",
+    "description": "生成を停止しました。問題を報告するにはエラーレポートをコピーしてください。セーブ選択に戻ることもできます。",
+    "code": "エラーコード",
+    "message": "メッセージ",
+    "path": "関連パス",
+    "detail": "詳細",
+    "copy": "レポートをコピー",
+    "copied": "エラーレポートをコピーしました",
+    "copyFailed": "コピーに失敗しました。上のレポートを選択して手動でコピーするか、再試行してください。",
+    "return": "戻る"
+  },
+  "running": {
+    "title": "技術ツリーを生成中",
+    "longWaitHint": "技術定義とローカライズを読み込んでいます。有効な MOD が多い場合、時間がかかることがあります...",
+    "cancelling": "生成タスクをキャンセル中..."
+  },
+  "stages": {
+    "SAVE_PARSE": "セーブを解析",
+    "LOAD_ORDER": "読み込み順を解決",
+    "INGEST_TECH": "技術定義を読み込み",
+    "RELATIONS": "依存関係を構築",
+    "INGEST_L10N": "ローカライズを読み込み",
+    "RENDER": "描画を事前計算",
+    "CYCLES": "循環を検出",
+    "WRITE_OUTPUT": "出力ファイルを書き込み",
+    "DONE": "完了"
+  },
+  "barriers": {
+    "needSave": "セーブを選択してください",
+    "invalidSave": "このセーブは解析できません。鉄人モード以外のセーブを選択してください。",
+    "needEmpire": "帝国を選択してください",
+    "needLanguage": "出力言語を少なくとも1つ選択してください"
+  }
+}

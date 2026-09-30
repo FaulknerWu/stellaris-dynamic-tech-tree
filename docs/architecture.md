@@ -201,7 +201,7 @@ ASCII 连接线使用 `|   `、四个空格和 `|-`，截断标识为 `...`。`R
 
 `.yml` 使用带 BOM 的 UTF-8 编码和 LF 分隔。写入通过 `AtomicWriteFile` 逐文件提交。输出器还会清理本次未选语言目录下、符合上述两个固定文件名的旧产物，并记录清理结果。
 
-游戏输出支持 `english` 和 `simp_chinese`，默认 `english`。重新生成时，选定语言文件会被当前结果覆盖。
+游戏输出支持 `english`、`simp_chinese`、`japanese` 和 `russian`，默认 `english`。重新生成时，选定语言文件会被当前结果覆盖。
 
 ## 命令行与桌面入口
 
@@ -218,7 +218,7 @@ CLI 提供两个子命令：
 
 ## 国际化与维护入口
 
-`dtt-i18n` 提供 `AppLocale`、`Translator` 和类型化消息接口，产品语言为 `en`、`zh-Hans`。游戏输出语言使用独立的 `GameLanguage`。报告语言由 `RunGenerationRequest.presentation.report_locale` 在任务创建时确定，`generation/report.rs` 组织结构化数据，`generation/report_text.rs` 负责文本渲染。界面切换语言后，磁盘报告保留生成时的语言。
+`dtt-i18n` 提供 `AppLocale`、`Translator` 和类型化消息接口，产品语言为 `en`、`zh-Hans`、`ja`、`ru`。游戏输出语言使用独立的 `GameLanguage`。报告语言由 `RunGenerationRequest.presentation.report_locale` 在任务创建时确定，`generation/report.rs` 组织结构化数据，`generation/report_text.rs` 负责文本渲染。界面切换语言后，磁盘报告保留生成时的语言。
 
 Rust 翻译资源位于 `crates/dtt-i18n/locales`，前端资源位于 `apps/dtt-desktop/src/i18n/locales`。游戏文案使用 Fluent 的 game 域，并关闭双向文本隔离符。Tauri DTO 传递错误码、枚举和参数，前端根据当前语言展示诊断。
 

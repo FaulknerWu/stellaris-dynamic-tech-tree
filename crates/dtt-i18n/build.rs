@@ -72,7 +72,7 @@ fn validate(locale: &str, domain: &str) -> BTreeMap<String, BTreeSet<String>> {
         .add_resource(resource)
         .expect("no duplicate resources");
     for (id, names) in &contract {
-        for count in [0, 1, 2, 1_000_000] {
+        for count in [0, 1, 2, 5, 11, 21, 22, 25, 1_000_000] {
             let mut args = FluentArgs::new();
             for name in names {
                 if ["count", "tier", "limit", "index"].contains(&name.as_str()) {
@@ -94,11 +94,17 @@ fn validate(locale: &str, domain: &str) -> BTreeMap<String, BTreeSet<String>> {
     contract
 }
 fn main() {
+    println!("cargo:rerun-if-changed=locales.json");
+    let registry: BTreeMap<String, serde_json::Value> =
+        serde_json::from_str(include_str!("locales.json")).expect("valid locale registry");
     for domain in ["cli", "errors", "diagnostics", "report", "game"] {
-        assert_eq!(
-            validate("en", domain),
-            validate("zh-Hans", domain),
-            "{domain}: inconsistent message/parameter contracts"
-        );
+        let baseline = validate("en", domain);
+        for locale in registry.keys() {
+            assert_eq!(
+                baseline,
+                validate(locale, domain),
+                "{locale}/{domain}: inconsistent message/parameter contracts"
+            );
+        }
     }
 }

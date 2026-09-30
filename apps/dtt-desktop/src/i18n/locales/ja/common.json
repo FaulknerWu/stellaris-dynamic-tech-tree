@@ -1,0 +1,55 @@
+{
+  "steps": {
+    "settings": "環境と設定",
+    "saves": "セーブと帝国",
+    "generate": "生成",
+    "results": "結果と診断"
+  },
+  "actions": {
+    "nextToSaves": "次へ：セーブ選択",
+    "prevToSettings": "戻る：環境と設定",
+    "startGeneration": "生成開始",
+    "cancel": "キャンセル",
+    "cancelling": "キャンセル中...",
+    "openOutputDirectory": "出力フォルダーを開く",
+    "changeSave": "セーブを変更",
+    "modifySettings": "設定を変更",
+    "modify": "変更",
+    "restore": "リセット",
+    "reset": "検出した値に戻す",
+    "refresh": "再スキャン",
+    "rescanEnvironment": "環境を再スキャン",
+    "close": "閉じる",
+    "retry": "再試行"
+  },
+  "settings": {
+    "title": "設定",
+    "theme": "テーマ",
+    "themeLight": "ライト",
+    "themeDark": "ダーク",
+    "themeSystem": "システムに従う",
+    "about": "DTT について",
+    "version": "バージョン",
+    "license": "ライセンス",
+    "aboutText": "Dynamic Technology Tree は、Stellaris のセーブと有効な MOD から技術の依存関係ツリーを計算し、ローカライズデータとともに出力するデスクトップツールです。",
+    "localeSaveFailed": "設定を保存できませんでした。今回のセッションでは選択した設定が引き続き適用されます。",
+    "localePreference": "表示言語"
+  },
+  "wizard": {
+    "ariaLabel": "ウィザードの手順"
+  },
+  "hints": {
+    "needEnvironment": "まず Stellaris のインストール先とドキュメントフォルダーを設定し、環境を検出してください",
+    "settingsAutosaved": "環境と設定の変更は自動保存されます",
+    "saveSelected": "選択中：{{name}}",
+    "selectSave": "セーブを選択してください",
+    "generationReady": "生成が完了しました。ゲーム内で MOD を読み込めます。"
+  },
+  "status": {
+    "ready": "準備完了",
+    "incomplete": "未完了"
+  },
+  "appTitle": "DTT — 動的技術ツリー",
+  "feedback": "フィードバック：QQ グループ {{group}}",
+  "noDate": "日付なし"
+}

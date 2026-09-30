@@ -1,0 +1,47 @@
+{
+  "title": "セーブ選択",
+  "sources": {
+    "local": "ローカルセーブ",
+    "steamCloud": "Steam クラウド"
+  },
+  "manualSelect": "ファイルからセーブを選択...",
+  "libraryTitle": "セーブ一覧",
+  "empireTitle": "帝国の確認",
+  "manualSelectFile": ".sav ファイルを選択",
+  "listAriaLabel": "セーブ一覧",
+  "gameDate": "ゲーム内日付：{{date}}",
+  "binaryWarning": "鉄人モード・バイナリ形式のセーブには対応していません。鉄人モード以外のテキスト形式のセーブを使用してください。",
+  "corruptFallback": "セーブが破損しているため読み取れません",
+  "customSelection": "手動で選択",
+  "state": {
+    "text": {
+      "badge": "テキスト"
+    },
+    "binary": {
+      "badge": "鉄人モード"
+    },
+    "corrupt": {
+      "badge": "破損"
+    }
+  },
+  "empty": {
+    "local": {
+      "title": "ローカルセーブが見つかりません",
+      "description": "ドキュメントフォルダーを確認するか、下のボタンでセーブファイルを選択してください。"
+    },
+    "steamCloud": {
+      "title": "クラウドセーブが見つかりません",
+      "description": "Steam クラウドのセーブを検出できないか、Steam ライブラリ一覧が空です。Steam クラウドの同期を確認してください。"
+    }
+  },
+  "availableCount_other": "利用可能なセーブ：{{count, number}} 件",
+  "scanFailures": {
+    "steam_users": "Steam ユーザーフォルダーを読み取れません：{{path}}",
+    "steam_user_entry": "Steam ユーザーの項目を読み取れません：{{path}}",
+    "save_root": "セーブフォルダーを読み取れません：{{path}}",
+    "campaign_entry": "キャンペーンの項目を読み取れません：{{path}}",
+    "campaign": "キャンペーンフォルダーを読み取れません：{{path}}",
+    "save_entry": "セーブの項目を読み取れません：{{path}}",
+    "file_metadata": "セーブの属性を読み取れません：{{path}}"
+  }
+}

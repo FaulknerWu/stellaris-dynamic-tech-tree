@@ -3,7 +3,9 @@ use std::fs;
 use std::path::Path;
 
 use dtt_core::technology::Id;
-use dtt_stellaris::output::{GameLanguage, WriteOutcome, WriteRequest, write};
+use dtt_stellaris::output::{
+    GameLanguage, SUPPORTED_OUTPUT_LANGUAGES, WriteOutcome, WriteRequest, write,
+};
 
 fn generate(root: &Path, languages: &[GameLanguage], eligible: &[Id]) -> WriteOutcome {
     let trees = HashMap::from([(
@@ -136,12 +138,12 @@ fn repeated_output_is_byte_identical_regardless_of_eligible_input_order() {
 }
 
 #[test]
-fn both_output_languages_preserve_markup_and_escape_once() {
+fn all_output_languages_preserve_markup_and_escape_once() {
     let temp = tempfile::tempdir().unwrap();
     let id = Id::from("base");
     let value =
         "quote \"raw\" and \\\"escaped\\\"\n$tech_id$ §H £physics£ path C:\\mods\\x literal \\n";
-    let languages = [GameLanguage::English, GameLanguage::SimpChinese];
+    let languages = SUPPORTED_OUTPUT_LANGUAGES;
     let descriptions = languages
         .into_iter()
         .map(|language| (language, HashMap::from([(id.clone(), value.into())])))
@@ -171,5 +173,62 @@ fn both_output_languages_preserve_markup_and_escape_once() {
             "{output}"
         );
         assert!(output.contains("literal \\n"));
+    }
+}
+
+#[test]
+fn japanese_and_russian_outputs_have_native_labels_and_are_cleaned_when_deselected() {
+    let temp = tempfile::tempdir().unwrap();
+    let languages = [GameLanguage::Japanese, GameLanguage::Russian];
+    let result = generate(temp.path(), &languages, &["base".into()]);
+    assert!(result.complete, "{:?}", result.failed);
+    assert_eq!(result.written.len(), 5);
+    for (language, title, tier) in [
+        (GameLanguage::Japanese, "技術ツリー", "ティア：2"),
+        (GameLanguage::Russian, "Дерево технологий", "Ранг: 2"),
+    ] {
+        let code = language.code();
+        assert_eq!(code.parse::<GameLanguage>().unwrap(), language);
+        let main = read_localisation(
+            temp.path(),
+            &format!("localisation/{code}/zztechtreemain_l_{code}.yml"),
+        );
+        assert!(main.starts_with(&format!("l_{code}:\n")));
+        assert!(main.contains(title), "{main}");
+        let replaced = read_localisation(
+            temp.path(),
+            &format!("localisation/{code}/replace/zztechtreereplaced_l_{code}.yml"),
+        );
+        assert!(replaced.contains(tier), "{replaced}");
+        assert!(replaced.contains("$variant_techtree$"));
+        fs::write(
+            temp.path().join(format!("localisation/{code}/user.yml")),
+            "user",
+        )
+        .unwrap();
+    }
+    let result = generate(temp.path(), &[GameLanguage::English], &["base".into()]);
+    assert!(result.complete);
+    assert_eq!(result.removed.len(), 4);
+    for language in languages {
+        let code = language.code();
+        assert!(
+            !temp
+                .path()
+                .join(format!("localisation/{code}/zztechtreemain_l_{code}.yml"))
+                .exists()
+        );
+        assert!(
+            !temp
+                .path()
+                .join(format!(
+                    "localisation/{code}/replace/zztechtreereplaced_l_{code}.yml"
+                ))
+                .exists()
+        );
+        assert_eq!(
+            fs::read_to_string(temp.path().join(format!("localisation/{code}/user.yml"))).unwrap(),
+            "user"
+        );
     }
 }

@@ -193,20 +193,42 @@ fn parse_locale(value: &str) -> Result<String, String> {
     if value == "system" || dtt_i18n::AppLocale::matching(value).is_some() {
         Ok(value.to_owned())
     } else {
-        Err("system | en | zh-Hans".into())
+        Err("system | en | zh-Hans | ja | ru".into())
     }
 }
 fn parse_language(value: &str) -> Result<GameLanguage, String> {
     match value {
         "english" => Ok(GameLanguage::English),
         "simp_chinese" => Ok(GameLanguage::SimpChinese),
-        _ => Err("english | simp_chinese".into()),
+        "japanese" => Ok(GameLanguage::Japanese),
+        "russian" => Ok(GameLanguage::Russian),
+        _ => Err("english | simp_chinese | japanese | russian".into()),
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn new_output_languages_are_independent_of_product_locale() {
+        let args = Cli::try_parse_from([
+            "dtt",
+            "--locale=ja",
+            "generate",
+            "synthetic.sav",
+            "--language=japanese",
+            "--language=russian",
+        ])
+        .unwrap();
+        let Commands::Generate(args) = args.command else {
+            panic!("expected generate");
+        };
+        assert_eq!(
+            args.languages,
+            [GameLanguage::Japanese, GameLanguage::Russian]
+        );
+    }
     fn prefetch(args: &[&str]) -> Option<String> {
         prefetch_locale(&args.iter().map(Into::into).collect::<Vec<_>>())
             .map(|v| v.into_string().unwrap())

@@ -1,3 +1,19 @@
+import ruDiagnostics from "./locales/ru/diagnostics.json";
+import ruCommon from "./locales/ru/common.json";
+import ruEnvironment from "./locales/ru/environment.json";
+import ruSaves from "./locales/ru/saves.json";
+import ruEmpire from "./locales/ru/empire.json";
+import ruGeneration from "./locales/ru/generation.json";
+import ruResults from "./locales/ru/results.json";
+import ruErrors from "./locales/ru/errors.json";
+import jaDiagnostics from "./locales/ja/diagnostics.json";
+import jaCommon from "./locales/ja/common.json";
+import jaEnvironment from "./locales/ja/environment.json";
+import jaSaves from "./locales/ja/saves.json";
+import jaEmpire from "./locales/ja/empire.json";
+import jaGeneration from "./locales/ja/generation.json";
+import jaResults from "./locales/ja/results.json";
+import jaErrors from "./locales/ja/errors.json";
 import enDiagnostics from "./locales/en/diagnostics.json";
 import zhDiagnostics from "./locales/zh-Hans/diagnostics.json";
 import enCommon from "./locales/en/common.json";
@@ -16,6 +32,26 @@ import zhResults from "./locales/zh-Hans/results.json";
 import zhSaves from "./locales/zh-Hans/saves.json";
 
 export const resources = {
+  ru: {
+    diagnostics: ruDiagnostics,
+    common: ruCommon,
+    environment: ruEnvironment,
+    saves: ruSaves,
+    empire: ruEmpire,
+    generation: ruGeneration,
+    results: ruResults,
+    errors: ruErrors,
+  },
+  ja: {
+    diagnostics: jaDiagnostics,
+    common: jaCommon,
+    environment: jaEnvironment,
+    saves: jaSaves,
+    empire: jaEmpire,
+    generation: jaGeneration,
+    results: jaResults,
+    errors: jaErrors,
+  },
   "zh-Hans": {
     diagnostics: zhDiagnostics,
     common: zhCommon,

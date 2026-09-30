@@ -1,0 +1,50 @@
+{
+  "title": "Выбор сохранения",
+  "sources": {
+    "local": "Локальные сохранения",
+    "steamCloud": "Steam Cloud"
+  },
+  "manualSelect": "Выбрать файл сохранения...",
+  "libraryTitle": "Библиотека сохранений",
+  "empireTitle": "Просмотр империи",
+  "manualSelectFile": "Выберите файл .sav",
+  "listAriaLabel": "Список сохранений",
+  "gameDate": "Игровая дата: {{date}}",
+  "binaryWarning": "Двоичные сохранения и режим «Стальная воля» не поддерживаются. Используйте текстовое сохранение без этого режима.",
+  "corruptFallback": "Файл сохранения повреждён и не может быть прочитан",
+  "customSelection": "Выбрано вручную",
+  "state": {
+    "text": {
+      "badge": "Текстовое"
+    },
+    "binary": {
+      "badge": "Стальная воля"
+    },
+    "corrupt": {
+      "badge": "Повреждено"
+    }
+  },
+  "empty": {
+    "local": {
+      "title": "Локальные сохранения не найдены",
+      "description": "Проверьте папку документов или выберите файл сохранения вручную кнопкой ниже."
+    },
+    "steamCloud": {
+      "title": "Облачные сохранения не найдены",
+      "description": "Сохранения Steam Cloud не обнаружены или список библиотек Steam пуст. Проверьте синхронизацию Steam Cloud."
+    }
+  },
+  "availableCount_one": "Доступно {{count, number}} сохранение",
+  "availableCount_few": "Доступно {{count, number}} сохранения",
+  "availableCount_many": "Доступно {{count, number}} сохранений",
+  "availableCount_other": "Доступно {{count, number}} сохранения",
+  "scanFailures": {
+    "steam_users": "Не удалось прочитать папку пользователей Steam: {{path}}",
+    "steam_user_entry": "Не удалось прочитать запись пользователя Steam: {{path}}",
+    "save_root": "Не удалось прочитать папку сохранений: {{path}}",
+    "campaign_entry": "Не удалось прочитать запись кампании: {{path}}",
+    "campaign": "Не удалось прочитать папку кампании: {{path}}",
+    "save_entry": "Не удалось прочитать запись сохранения: {{path}}",
+    "file_metadata": "Не удалось прочитать атрибуты сохранения: {{path}}"
+  }
+}

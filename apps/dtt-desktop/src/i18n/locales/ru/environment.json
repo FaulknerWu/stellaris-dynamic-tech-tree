@@ -1,0 +1,23 @@
+{
+  "dialog": {
+    "selectGameRoot": "Выберите папку игры Stellaris",
+    "selectDocumentsDir": "Выберите папку документов Stellaris",
+    "selectLauncherDb": "Выберите файл launcher-v2.sqlite",
+    "sqliteFilter": "База данных SQLite"
+  },
+  "pathsTitle": "Пути окружения",
+  "settingsTitle": "Настройки генерации",
+  "paths": {
+    "gameRoot": "1. Папка установки Stellaris",
+    "documentsDir": "2. Папка документов (Paradox Interactive)",
+    "launcherDb": "3. База данных лаунчера (launcher-v2.sqlite)",
+    "outputDir": "4. Папка вывода"
+  },
+  "placeholders": {
+    "gameRoot": "Папка установки Stellaris не указана",
+    "documentsDir": "Папка документов не указана",
+    "launcherDb": "База данных лаунчера не указана",
+    "outputDir": "Папка приложения"
+  },
+  "outputDirBadge": "Папка приложения"
+}

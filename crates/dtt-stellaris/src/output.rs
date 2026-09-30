@@ -15,6 +15,8 @@ pub use writer::write;
 pub enum GameLanguage {
     English,
     SimpChinese,
+    Japanese,
+    Russian,
 }
 
 impl GameLanguage {
@@ -22,6 +24,8 @@ impl GameLanguage {
         match self {
             Self::English => "english",
             Self::SimpChinese => "simp_chinese",
+            Self::Japanese => "japanese",
+            Self::Russian => "russian",
         }
     }
 
@@ -29,6 +33,8 @@ impl GameLanguage {
         match self {
             Self::English => dtt_i18n::AppLocale::En,
             Self::SimpChinese => dtt_i18n::AppLocale::ZhHans,
+            Self::Japanese => dtt_i18n::AppLocale::Ja,
+            Self::Russian => dtt_i18n::AppLocale::Ru,
         }
     }
 }
@@ -50,8 +56,12 @@ impl std::str::FromStr for GameLanguage {
     }
 }
 
-pub const SUPPORTED_OUTPUT_LANGUAGES: [GameLanguage; 2] =
-    [GameLanguage::English, GameLanguage::SimpChinese];
+pub const SUPPORTED_OUTPUT_LANGUAGES: [GameLanguage; 4] = [
+    GameLanguage::English,
+    GameLanguage::SimpChinese,
+    GameLanguage::Japanese,
+    GameLanguage::Russian,
+];
 
 #[derive(Debug, Clone, thiserror::Error)]
 #[error("unsupported output language `{0}`")]

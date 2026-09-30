@@ -229,7 +229,9 @@ export type EnglishResources = {
       "hint": "Please select at least one output language",
       "items": {
         "english": "English",
-        "simp_chinese": "Simplified Chinese"
+        "simp_chinese": "简体中文",
+        "japanese": "日本語",
+        "russian": "Русский"
       },
       "selectedCount_other": "{{count, number}} languages selected",
       "selectedCount_one": "{{count, number}} language selected"

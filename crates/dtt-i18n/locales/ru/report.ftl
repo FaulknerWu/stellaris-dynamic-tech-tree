@@ -1,0 +1,17 @@
+report-title = Отчёт о генерации DTT
+report-missing-mods = Отсутствующие файлы описания модификаций
+report-eligible = Доступные технологии
+report-uncertain = Неопределённая доступность
+report-excluded-identity = Исключено по начальным данным империи
+report-excluded-prerequisite = Исключено по цепочке необходимых технологий
+report-unknown = Неизвестные условия
+report-deferred = Отложенные условия (будущие возможности сохранены)
+report-game-data = Диагностика игровых данных
+report-definitions = Необработанные поля определений
+report-localisation = Диагностика игровой локализации
+report-self-cycles = Ссылки на себя
+report-cycles = Циклы зависимостей
+report-swap-matched = Совпавшие замены
+report-swap-no-match = Замены без совпадений
+report-swap-uncertain = Неопределённые замены (базовое отображение сохранено)
+report-technical = Технические сведения
